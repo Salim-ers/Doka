@@ -6,7 +6,7 @@
  */
 
 /** Durée (s), environ, entre l'arrivée de la nouvelle page et le début de l'ouverture de la nappe. */
-export const CURTAIN_HOLD = 0.45;
+export const CURTAIN_HOLD = 0.3;
 
 let curtainCovering = false;
 

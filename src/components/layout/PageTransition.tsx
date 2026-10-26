@@ -2,20 +2,25 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { ScrollTrigger } from "@/lib/gsap";
 import { setCurtainCovering } from "@/lib/entrance";
-import { DokaLogo } from "@/components/brand/DokaLogo";
+import { DokaLogoLetters } from "@/components/brand/DokaLogoLetters";
 import { mainNav, legalNav } from "@/data/site-config";
 import { productsBySlug } from "@/data/products";
 
-type Origin = { x: number; y: number };
-
-/** Durée minimale (s) de couverture : le logo a fini de se poser avant de s'envoler. */
-const MIN_COVER = 0.95;
-type Ctx = { navigate: (href: string, origin?: Origin) => void };
+type Ctx = { navigate: (href: string) => void };
 const TransitionContext = createContext<Ctx>({ navigate: () => {} });
 
 export const usePageTransition = () => useContext(TransitionContext);
+
+/** Durée minimale (ms) de couverture : le logo a fini de se poser avant de s'envoler. */
+const MIN_COVER = 700;
+const EASE_IN_OUT = "cubic-bezier(0.65, 0, 0.35, 1)";
+const EASE_POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
+const EASE_IN = "cubic-bezier(0.55, 0, 1, 0.45)";
+/** Hauteur des bords arrondis de la nappe (dépassent en haut et en bas). */
+const LIP = "18vh";
 
 /** Nom de la page d'arrivée, affiché sous le logo pendant la transition. */
 function labelFor(pathname: string) {
@@ -27,9 +32,13 @@ function labelFor(pathname: string) {
 
 /**
  * Transition Doka, à chaque navigation interne :
- * 1. une nappe orange s'ouvre en cercle depuis le point cliqué (le « point » des lettres du logo) ;
+ * 1. une nappe orange monte du bas de l'écran, bord supérieur arrondi ;
  * 2. les quatre lettres du logo se posent une à une, avec le nom de la page d'arrivée ;
- * 3. la page change sous la nappe, puis les lettres s'envolent et la nappe se lève en s'arrondissant.
+ * 3. la page change sous la nappe, puis les lettres s'envolent et la nappe repart par le haut.
+ * Tout est animé en `transform` / `opacity` avec l'API Web Animations : le compositeur du
+ * navigateur fait tourner l'animation même pendant que la nouvelle page se construit
+ * (aucune saccade sur un téléphone modeste). Le travail lourd (rendu, recalcul des
+ * animations au scroll) se fait sous la nappe.
  * - La page n'est jamais révélée avant d'être prête ; si elle tarde trop, navigation classique.
  * - Clics pendant une transition : le dernier gagne ; précédent / suivant du navigateur : sans nappe.
  * - Mouvement réduit : navigation directe.
@@ -38,6 +47,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   const router = useRouter();
   const pathname = usePathname();
   const curtain = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const logo = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLParagraphElement>(null);
   const pending = useRef<string | null>(null);
@@ -46,52 +56,55 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   const busy = useRef(false);
   const startedAt = useRef(0);
   const failsafe = useRef(0);
-  const tl = useRef<gsap.core.Timeline | null>(null);
+  const waiting = useRef(0);
+  const anims = useRef<Animation[]>([]);
 
-  const letters = () => logo.current?.querySelectorAll("[data-letter]") ?? [];
+  const play = (el: Element | null, frames: Keyframe[], options: KeyframeAnimationOptions) => {
+    if (!el) return null;
+    const a = el.animate(frames, { fill: "both", ...options });
+    anims.current.push(a);
+    return a;
+  };
+  const letters = () => Array.from(logo.current?.querySelectorAll("[data-letter]") ?? []);
 
-  const reveal = useCallback(() => {
+  const finish = useCallback(() => {
     const el = curtain.current;
-    if (!el) return;
-    window.clearTimeout(failsafe.current);
-    tl.current?.kill();
-    tl.current = gsap
-      .timeline({
-        onComplete: () => {
-          gsap.set(el, { visibility: "hidden", clearProps: "transform,clipPath,borderRadius" });
-          busy.current = false;
-          setCurtainCovering(false);
-          ScrollTrigger.refresh();
-        },
-      })
-      .to(
-        letters(),
-        {
-          yPercent: -70,
-          autoAlpha: 0,
-          rotate: (i: number) => (i % 2 ? 6 : -6),
-          duration: 0.3,
-          stagger: 0.035,
-          ease: "power2.in",
-        },
-        0,
-      )
-      .to(label.current, { autoAlpha: 0, y: -10, duration: 0.22, ease: "power2.in" }, 0)
-      .fromTo(
-        el,
-        { yPercent: 0, borderRadius: "0 0 0% 0% / 0 0 0px 0px" },
-        {
-          yPercent: -100,
-          borderRadius: `0 0 50% 50% / 0 0 ${Math.round(window.innerHeight * 0.28)}px ${Math.round(window.innerHeight * 0.28)}px`,
-          duration: 0.65,
-          ease: "doka.inOut",
-        },
-        0.12,
-      );
+    anims.current.forEach((a) => a.cancel());
+    anims.current = [];
+    if (el) el.style.visibility = "hidden";
+    busy.current = false;
+    setCurtainCovering(false);
   }, []);
 
+  const reveal = useCallback(() => {
+    window.clearTimeout(failsafe.current);
+    window.clearTimeout(waiting.current);
+    label.current?.classList.remove("is-waiting");
+    letters().forEach((l, i) =>
+      play(
+        l,
+        [
+          { transform: "translateY(0)", opacity: 1 },
+          { transform: "translateY(-60%)", opacity: 0 },
+        ],
+        {
+          duration: 260,
+          delay: i * 30,
+          easing: EASE_IN,
+        },
+      ),
+    );
+    play(label.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: EASE_IN });
+    const out = play(
+      panel.current,
+      [{ transform: "translateY(0)" }, { transform: `translateY(calc(-100% - ${LIP}))` }],
+      { duration: 600, delay: 90, easing: EASE_IN_OUT },
+    );
+    out?.finished.then(finish, () => {});
+  }, [finish]);
+
   const navigate = useCallback(
-    (href: string, origin?: Origin) => {
+    (href: string) => {
       const url = new URL(href, window.location.href);
       const target = url.pathname + url.search + url.hash;
       if (url.pathname === window.location.pathname) {
@@ -115,7 +128,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       }
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const el = curtain.current;
-      if (reduce || !el) {
+      if (reduce || !el || typeof el.animate !== "function") {
         router.push(target);
         return;
       }
@@ -128,50 +141,70 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       router.prefetch(target);
       if (label.current) label.current.textContent = labelFor(url.pathname);
 
-      // le cercle part du point cliqué (ou du centre au clavier)
-      const x = origin && (origin.x || origin.y) ? origin.x : window.innerWidth / 2;
-      const y = origin && (origin.x || origin.y) ? origin.y : window.innerHeight / 2;
-      const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      tl.current?.kill();
-      gsap.set(el, { visibility: "visible", yPercent: 0, borderRadius: 0 });
-      tl.current = gsap
-        .timeline()
-        .fromTo(
-          el,
-          { clipPath: `circle(0px at ${x}px ${y}px)` },
-          { clipPath: `circle(${Math.ceil(r)}px at ${x}px ${y}px)`, duration: 0.55, ease: "doka.inOut" },
-        )
-        .fromTo(
-          letters(),
-          { yPercent: 110, autoAlpha: 1, rotate: (i: number) => [-10, 8, -6, 10][i] ?? 0 },
-          { yPercent: 0, rotate: 0, duration: 0.5, stagger: 0.05, ease: "doka.pop" },
-          0.18,
-        )
-        .fromTo(label.current, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "doka.out" }, 0.35)
-        .add(() => {
+      anims.current.forEach((a) => a.cancel());
+      anims.current = [];
+      el.style.visibility = "visible";
+      const cover = play(
+        panel.current,
+        [{ transform: `translateY(calc(100% + ${LIP}))` }, { transform: "translateY(0)" }],
+        { duration: 520, easing: EASE_IN_OUT },
+      );
+      letters().forEach((l, i) =>
+        play(l, [{ transform: "translateY(115%)" }, { transform: "translateY(0)" }], {
+          duration: 440,
+          delay: 160 + i * 40,
+          easing: EASE_POP,
+        }),
+      );
+      play(
+        label.current,
+        [
+          { opacity: 0, transform: "translateY(10px)" },
+          { opacity: 1, transform: "none" },
+        ],
+        {
+          duration: 300,
+          delay: 320,
+          easing: EASE_OUT,
+        },
+      );
+      cover?.finished.then(
+        () => {
           pushed.current = true;
           router.push(nextTarget.current);
+          // la page tarde : le nom de la page respire doucement en attendant
+          waiting.current = window.setTimeout(() => label.current?.classList.add("is-waiting"), 900);
           // filet de sécurité : si la page n'arrive pas, navigation classique
           failsafe.current = window.setTimeout(() => window.location.assign(nextTarget.current), 8000);
-        }, 0.55);
+        },
+        () => {},
+      );
     },
     [router],
   );
 
-  // La nouvelle page est rendue : on la laisse peindre, on tient le logo un instant, on lève la nappe
+  // La nouvelle page est rendue : sous la nappe, on remet le défilement en place et on recalcule
+  // les animations au scroll (le coûteux), puis on lève la nappe dès que le logo est posé.
   useEffect(() => {
     if (!pending.current || pending.current !== pathname) return;
     pending.current = null;
     window.clearTimeout(failsafe.current);
-    // haut de la nouvelle page, ou l'ancre demandée (ex. /esprit-doka#le-lieu)
     const hash = decodeURIComponent(window.location.hash.slice(1));
     const anchor = hash ? document.getElementById(hash) : null;
     if (anchor) anchor.scrollIntoView();
     else window.scrollTo(0, 0);
-    const elapsed = (performance.now() - startedAt.current) / 1000;
-    const wait = Math.max(0.1, MIN_COVER - elapsed);
-    const id = window.setTimeout(() => requestAnimationFrame(reveal), wait * 1000);
-    return () => window.clearTimeout(id);
+    let raf = 0;
+    const id = window.setTimeout(
+      () => {
+        ScrollTrigger.refresh();
+        raf = requestAnimationFrame(reveal);
+      },
+      Math.max(60, MIN_COVER - (performance.now() - startedAt.current)),
+    );
+    return () => {
+      window.clearTimeout(id);
+      cancelAnimationFrame(raf);
+    };
   }, [pathname, reveal]);
 
   // Focus sur le contenu après navigation (lecteurs d'écran, clavier)
@@ -189,9 +222,10 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     <TransitionContext.Provider value={{ navigate }}>
       {children}
       <div ref={curtain} className="page-curtain" aria-hidden="true">
+        <div ref={panel} className="page-curtain__panel" />
         <div className="page-curtain__inner">
           <div ref={logo} className="page-curtain__logo">
-            <DokaLogo title={null} />
+            <DokaLogoLetters />
           </div>
           <p ref={label} className="page-curtain__label" />
         </div>

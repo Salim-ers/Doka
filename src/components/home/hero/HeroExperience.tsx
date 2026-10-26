@@ -161,18 +161,21 @@ export function HeroExperience() {
     };
 
     // Démarrage après le chargement de la page et un temps calme : la scène ne concurrence
-    // jamais l'affichage du contenu (le poster tient la place jusque-là).
+    // jamais l'affichage du contenu (le poster tient la place jusque-là). Si l'écran de
+    // chargement ou la nappe de transition couvre encore la page, on attend qu'ils se lèvent :
+    // l'initialisation 3D ne vole pas d'images à leur animation.
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number })
       .requestIdleCallback;
     let handle = 0;
     const go = () => (video ? setMode("video") : void startLive());
     const schedule = () => {
+      const covered = entranceDelay();
       handle = window.setTimeout(
         () => {
           if (idle) idle(go, { timeout: 1200 });
           else go();
         },
-        video ? 600 : 300,
+        (video ? 600 : 300) + (covered > 0 ? (covered + 0.75) * 1000 : 0),
       );
     };
     if (document.readyState === "complete") schedule();

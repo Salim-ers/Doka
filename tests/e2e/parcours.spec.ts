@@ -7,6 +7,8 @@ test.describe("Parcours principal", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: /ton café/i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Découvrir la carte" }).first()).toBeVisible();
+    // grand écran : la navigation est dans l'en-tête, pas de barre du bas
+    await expect(page.getByRole("navigation", { name: "Accès rapide" })).toBeHidden();
     await scrollThrough(page);
     await expect(page.locator(".site-footer")).toBeInViewport();
     await expect(page.getByRole("heading", { name: /15 rue rambuteau/i })).toBeAttached();

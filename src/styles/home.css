@@ -7,6 +7,8 @@
   background: var(--cream);
 }
 .hero__sticky {
+  /* bas du bloc de texte (la barre mobile s’y ajoute) */
+  --hero-copy-bottom: calc(clamp(2.5rem, 11vh, 7rem) + var(--dock-space, 0px));
   position: sticky;
   top: 0;
   height: 100svh;
@@ -136,7 +138,7 @@
   position: absolute;
   z-index: 2;
   left: var(--gutter);
-  bottom: clamp(2.5rem, 11vh, 7rem);
+  bottom: var(--hero-copy-bottom);
   width: min(46vw, 760px);
   display: grid;
   gap: 1.3rem;
@@ -193,13 +195,12 @@
    mesurée en JS : --hero-copy-h) ; leur taille suit cette place, sans jamais chevaucher. */
 .hero__badges {
   --badge-gap: clamp(0.8rem, 2.5vh, 2rem);
-  --copy-bottom: clamp(2.5rem, 11vh, 7rem);
-  --avail: calc(100svh - var(--header-h) - var(--copy-bottom) - var(--hero-copy-h, 30rem) - 2 * var(--badge-gap));
+  --avail: calc(100svh - var(--header-h) - var(--hero-copy-bottom) - var(--hero-copy-h, 30rem) - 2 * var(--badge-gap));
   position: absolute;
   z-index: 2;
   left: var(--gutter);
   top: calc(var(--header-h) + var(--badge-gap));
-  bottom: calc(var(--copy-bottom) + var(--hero-copy-h, 30rem) + var(--badge-gap));
+  bottom: calc(var(--hero-copy-bottom) + var(--hero-copy-h, 30rem) + var(--badge-gap));
   width: min(46vw, 920px);
   display: flex;
   flex-wrap: wrap;
@@ -360,7 +361,7 @@
   /* Mobile : deux pastilles posées sur le trottoir de la scène */
   .hero__badges {
     top: auto;
-    bottom: 1.2rem;
+    bottom: calc(var(--dock-space, 0px) + 0.8rem);
     width: auto;
     gap: 0.5rem;
   }
@@ -373,6 +374,12 @@
   .hero__badge--oat {
     display: none;
   }
+  .hero__scroll {
+    display: none;
+  }
+}
+/* tablette : la barre du bas remplace l’indication « Défiler » */
+@media (max-width: 1239px) {
   .hero__scroll {
     display: none;
   }

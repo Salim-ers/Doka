@@ -47,3 +47,23 @@ test("Mobile : carrousel des incontournables au toucher, pas de débordement", a
   const scrollable = await viewport.evaluate((el) => el.scrollWidth > el.clientWidth);
   expect(scrollable).toBe(true);
 });
+
+test("Mobile : barre du bas « La carte » et « Itinéraire »", async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto("/nous-trouver");
+  const dock = page.getByRole("navigation", { name: "Accès rapide" });
+  await expect(dock).toBeVisible();
+  const itin = dock.getByRole("link", { name: /Itinéraire/ });
+  await expect(itin).toHaveAttribute("href", /google\.com\/maps\/dir\/\?api=1&destination=/);
+  await expect(itin).toHaveAttribute("target", "_blank");
+  // la barre ne masque pas la fin de la page : le pied de page reste lisible au-dessus
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const legal = page.locator(".footer-legal");
+  const [legalBox, dockBox] = await Promise.all([legal.boundingBox(), dock.boundingBox()]);
+  expect(legalBox!.y + legalBox!.height).toBeLessThanOrEqual(dockBox!.y);
+  await dock.getByRole("link", { name: "La carte" }).click();
+  await expect(page).toHaveURL(/\/la-carte$/);
+  await expectCurtainHidden(page);
+  await expect(dock.getByRole("link", { name: "La carte" })).toHaveAttribute("aria-current", "page");
+  expect(errors).toEqual([]);
+});

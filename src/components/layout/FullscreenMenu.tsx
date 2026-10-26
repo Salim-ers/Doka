@@ -26,7 +26,7 @@ export function FullscreenMenu({ open, onClose, pathname }: Props) {
     const meta = el.querySelectorAll(".fs-menu__meta > *");
     tl.current?.kill();
     // Le reste de la page devient inerte pendant l'ouverture (clavier, lecteurs d'écran)
-    const outside = document.querySelectorAll<HTMLElement>("main, footer, .site-header, .back-to-top");
+    const outside = document.querySelectorAll<HTMLElement>("main, footer, .site-header, .back-to-top, .dock");
     outside.forEach((n) => (n.inert = open));
     if (open) {
       document.body.classList.add("is-locked");

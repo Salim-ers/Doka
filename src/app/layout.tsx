@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { SiteLoader } from "@/components/layout/SiteLoader";
+import { MobileDock } from "@/components/layout/MobileDock";
 import { localBusinessJsonLd } from "@/lib/seo";
 
 const bricolage = localFont({
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
           <BackToTop />
+          <MobileDock />
         </PageTransitionProvider>
       </body>
     </html>

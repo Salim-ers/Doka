@@ -320,39 +320,60 @@
 /* ==========================================================================
    Transition de page
    ========================================================================== */
-/* Pas de transform ici : GSAP pilote la position (un translate CSS s'ajouterait au sien). */
+/* Animée en transform / opacity via l'API Web Animations (PageTransition) : calculé par le
+   compositeur, l'animation reste fluide pendant que la nouvelle page se construit. */
 .page-curtain {
   position: fixed;
   inset: 0;
   z-index: 150;
-  background: var(--orange);
-  color: var(--cream);
   display: grid;
   place-items: center;
+  color: var(--cream);
   visibility: hidden;
   pointer-events: none;
-  will-change: clip-path, transform;
+  overflow: hidden;
+}
+/* La nappe : plein écran, avec un bord arrondi qui dépasse en haut (à la montée)
+   et en bas (au départ). */
+.page-curtain__panel {
+  position: absolute;
+  inset: 0;
+  background: var(--orange);
+  will-change: transform;
+}
+.page-curtain__panel::before,
+.page-curtain__panel::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 18vh;
+  background: inherit;
+}
+.page-curtain__panel::before {
+  bottom: calc(100% - 1px);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.page-curtain__panel::after {
+  top: calc(100% - 1px);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
 }
 .page-curtain__inner {
+  position: relative;
   display: grid;
   justify-items: center;
   gap: clamp(0.8rem, 2vh, 1.3rem);
   width: min(52vw, 440px);
 }
+/* Les lettres montent depuis la ligne de base (débord autorisé au-dessus pour le rebond) */
 .page-curtain__logo {
   width: 100%;
+  overflow: hidden;
+  padding-top: 10%;
+  margin-top: -10%;
 }
-.page-curtain__logo svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  /* les lettres montent depuis la ligne de base */
-  clip-path: inset(-40% -10% 0 -10%);
-}
-.page-curtain__logo [data-letter] {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
+.page-curtain__logo .logo-letters__l {
+  will-change: transform, opacity;
 }
 .page-curtain__label {
   min-height: 1.2em;
@@ -361,7 +382,28 @@
   font-weight: 700;
   font-size: clamp(1.1rem, 2.2vw, 1.6rem);
   letter-spacing: -0.02em;
-  visibility: hidden;
+  opacity: 0;
+}
+.page-curtain__label.is-waiting {
+  animation: curtain-wait 1.1s var(--ease-in-out) infinite alternate;
+}
+@keyframes curtain-wait {
+  to {
+    opacity: 0.45;
+  }
+}
+
+/* Logo décomposé (DokaLogoLetters) : une couche par lettre dans le même cadre */
+.logo-letters {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.logo-letters__l {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* ==========================================================================
@@ -547,4 +589,89 @@
 }
 .back-to-top:hover {
   background: var(--orange);
+}
+
+/* ==========================================================================
+   Barre d'accès rapide (MobileDock) — mobile et tablette (< 1240 px)
+   ========================================================================== */
+.dock {
+  display: none;
+}
+@media (max-width: 1239px) {
+  :root {
+    /* place réservée en bas de l'écran pour la barre */
+    --dock-space: calc(56px + 2 * 10px + 12px + env(safe-area-inset-bottom));
+  }
+  .dock {
+    position: fixed;
+    z-index: 75;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    translate: -50% 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: min(calc(100% - 2 * var(--gutter)), 520px);
+    padding: 10px;
+    border-radius: var(--r-pill);
+    background: rgb(255 251 234 / 0.82);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow:
+      0 0 0 1px rgb(23 23 20 / 0.08),
+      0 18px 40px -18px rgb(23 23 20 / 0.55);
+    animation: dock-in 700ms var(--ease-out) 1.5s both;
+  }
+  .dock__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 56px;
+    padding: 0 1rem;
+    border-radius: var(--r-pill);
+    font-weight: 680;
+    font-size: 1.02rem;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 300ms var(--ease-pop),
+      background-color 250ms var(--ease-out);
+  }
+  .dock__btn:active {
+    transform: scale(0.96);
+  }
+  .dock__btn--carte {
+    background: var(--orange);
+    color: var(--ink);
+  }
+  .dock__btn--carte[aria-current="page"] {
+    box-shadow: inset 0 0 0 2px var(--ink);
+  }
+  .dock__btn--route {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  /* rien ne se cache sous la barre */
+  .site-footer {
+    padding-bottom: calc(1.5rem + var(--dock-space));
+  }
+  .back-to-top {
+    bottom: calc(var(--dock-space) + 10px);
+  }
+  /* la barre remplace le bouton « La carte » de l'en-tête */
+  .header-cta {
+    display: none;
+  }
+}
+@keyframes dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+}
+@media (max-width: 1239px) and (prefers-reduced-motion: reduce) {
+  .dock {
+    animation: none;
+  }
 }
