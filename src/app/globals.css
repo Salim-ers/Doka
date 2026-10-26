@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/base.css";
+@import "../styles/ui.css";
+@import "../styles/layout.css";
+@import "../styles/home.css";
+@import "../styles/pages.css";
+
+@theme inline {
+  --color-orange: var(--orange);
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-matcha: var(--matcha);
+  --color-espresso: var(--espresso);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-text);
+}

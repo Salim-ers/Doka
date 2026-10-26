@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Doka — design tokens
+   Couleurs échantillonnées sur les visuels fournis :
+   orange du logo #F14323 · crème du logo #FFFBEA · rouge façade #E90D09
+   ========================================================================== */
+:root {
+  /* Couleurs de marque */
+  --orange: #f14323;
+  --orange-hot: #e2361a;
+  --orange-soft: #ff8a6b;
+  /* orange lisible en petit texte sur crème (contraste ≥ 4,5:1) */
+  --orange-text: #c02a0f;
+  --facade: #de1f11;
+  --cream: #fffbea;
+  --paper: #fffdf5;
+  --ink: #171714;
+  --ink-2: #3b3934;
+  --ink-3: #6b675d;
+  --line: rgb(23 23 20 / 0.14);
+  /* Accents produits, extraits des photos */
+  --matcha: #5d8a17;
+  --matcha-deep: #23380a;
+  --matcha-pale: #dbeaa8;
+  --espresso: #3a1d0c;
+  --crema: #c27a37;
+  --milk: #f1e3cc;
+  --cookie: #c98b4a;
+
+  /* Typographie */
+  --font-display: var(--font-bricolage), "Arial Black", system-ui, sans-serif;
+  --font-text: var(--font-instrument), "Helvetica Neue", Arial, system-ui, sans-serif;
+
+  --fs-giant: clamp(5.5rem, 24vw, 26rem);
+  --fs-hero: clamp(3.4rem, 9.6vw, 10.5rem);
+  --fs-h1: clamp(3rem, 8vw, 8.5rem);
+  --fs-h2: clamp(2.4rem, 5.6vw, 5.6rem);
+  --fs-h3: clamp(1.6rem, 2.6vw, 2.4rem);
+  --fs-lead: clamp(1.15rem, 1.5vw, 1.45rem);
+  --fs-body: 1.0625rem;
+  --fs-small: 0.875rem;
+
+  /* Espacements (échelle 4/8) */
+  --gutter: clamp(1rem, 3.2vw, 2.75rem);
+  --section-y: clamp(5rem, 12vw, 11rem);
+  --maxw: 1440px;
+  --measure: 34rem;
+
+  /* Rayons : pastilles et blocs arrondis, comme les lettres du logo */
+  --r-pill: 999px;
+  --r-blob: 2.2rem;
+  --r-card: 1.6rem;
+  --r-sm: 0.8rem;
+
+  /* Mouvement */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --d-fast: 180ms;
+  --d-base: 420ms;
+  --d-slow: 900ms;
+
+  --header-h: 76px;
+  --focus: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-fast: 1ms;
+    --d-base: 1ms;
+    --d-slow: 1ms;
+  }
+}

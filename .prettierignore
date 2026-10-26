@@ -1,0 +1,8 @@
+.next
+node_modules
+public
+media
+test-results
+playwright-report
+src/components/brand/logo-paths.ts
+src/app/icon.svg
