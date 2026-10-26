@@ -8,7 +8,7 @@ import { AnimatedHeading } from "@/components/motion/AnimatedHeading";
 import { DokaButton } from "@/components/ui/DokaButton";
 
 /**
- * Coffee moment : la photo d'extraction s'ouvre de haut en bas, comme le café qui coule.
+ * L'heure du café : la photo d'extraction s'ouvre de haut en bas, comme le café qui coule.
  * Un filet graphique (SVG, pas sur la photo) se dessine en parallèle au rythme du scroll.
  */
 export function CoffeeMoment() {
@@ -59,7 +59,7 @@ export function CoffeeMoment() {
         />
       </svg>
       <AnimatedHeading id="cm-title" className="display type-giant cm-title" mode="chars">
-        coffee time.
+        l&apos;heure du café.
       </AnimatedHeading>
       <div className="cm-grid">
         <div className="cm-copy">

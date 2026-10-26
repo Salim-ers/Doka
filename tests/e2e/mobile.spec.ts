@@ -16,8 +16,8 @@ test("12. Menu mobile : ouverture, focus, navigation, fermeture", async ({ page 
   await expect(toggle).toBeFocused();
 
   await toggle.click();
-  await menu.getByRole("link", { name: "nos produits" }).click();
-  await expect(page).toHaveURL(/\/produits$/);
+  await menu.getByRole("link", { name: "nous trouver" }).click();
+  await expect(page).toHaveURL(/\/nous-trouver$/);
   await expect(menu).toBeHidden();
   await expectCurtainHidden(page);
   await expect(page.locator("body")).not.toHaveClass(/is-locked/);
@@ -29,7 +29,7 @@ test("12. Menu mobile : ouverture, focus, navigation, fermeture", async ({ page 
 
 test("Mobile : carrousel des incontournables au toucher, pas de débordement", async ({ page }) => {
   await page.goto("/");
-  for (const p of ["/", "/la-carte", "/produits", "/nous-trouver", "/esprit-doka", "/le-coffee-shop"]) {
+  for (const p of ["/", "/la-carte", "/produits/latte", "/nous-trouver", "/esprit-doka"]) {
     await page.goto(p);
     await page.evaluate(async () => {
       for (let y = 0; y < document.documentElement.scrollHeight; y += 700) {

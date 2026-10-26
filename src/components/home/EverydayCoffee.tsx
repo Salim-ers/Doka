@@ -6,7 +6,7 @@ import { everydayLadder, formatPrice, priceRange, productsBySlug } from "@/data/
 import { DLink } from "@/components/ui/DLink";
 
 /**
- * Signature 2 — Everyday Coffee.
+ * Signature 2 — Le café du quotidien.
  * Section collante pilotée par le scroll : trois phrases s'empilent (« le bon café, /
  * tous les jours, / dès 1,50 € »), puis le prix quitte la phrase et grossit jusqu'à
  * occuper l'écran en comptant depuis zéro. Enfin l'échelle des prix du quotidien se
@@ -150,7 +150,7 @@ export function EverydayCoffee() {
         </div>
 
         <div className="ev-ladder">
-          <p className="ev-ladder__title display">everyday coffee</p>
+          <p className="ev-ladder__title display">le café du quotidien</p>
           <ol className="ev-ladder__list" aria-label="Quelques prix de la carte">
             {ladder.map((p) => (
               <li key={p.slug} className="ev-ladder__row">

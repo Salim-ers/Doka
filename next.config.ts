@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { renamedSlugs } from "./src/data/products";
 
 const nextConfig: NextConfig = {
   // Site éditorial entièrement statique : on garde le modèle de rendu classique
@@ -22,6 +23,19 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  // Pages fusionnées (« Nos produits » dans « La carte », « Le coffee shop » dans « L'esprit Doka »)
+  // et fiches produits renommées en français : les anciennes adresses restent valides.
+  async redirects() {
+    return [
+      { source: "/produits", destination: "/la-carte", permanent: true },
+      { source: "/le-coffee-shop", destination: "/esprit-doka#le-lieu", permanent: true },
+      ...Object.entries(renamedSlugs).map(([from, to]) => ({
+        source: `/produits/${from}`,
+        destination: `/produits/${to}`,
+        permanent: true,
+      })),
+    ];
   },
   async headers() {
     return [

@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { DLink } from "@/components/ui/DLink";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { formatPrice, type Product } from "@/data/products";
-import { categoryOf } from "@/data/categories";
+import { sectionOf } from "@/data/categories";
 import { ProductVisual } from "./ProductVisual";
 
 type Props = {
@@ -24,7 +24,7 @@ type Props = {
 export function ProductCard({ product, variant = "default", sizes, className, headingLevel = "h3" }: Props) {
   const ref = useRef<HTMLElement>(null);
   const H = headingLevel;
-  const cat = categoryOf(product);
+  const cat = sectionOf(product);
 
   const onMove = (e: React.PointerEvent) => {
     if (e.pointerType !== "mouse") return;

@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import { BackToTop } from "@/components/layout/BackToTop";
+import { SiteLoader } from "@/components/layout/SiteLoader";
 import { localBusinessJsonLd } from "@/lib/seo";
 
 const bricolage = localFont({
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     siteName: "Doka Coffee Shop",
     images: [
-      { url: "/images/doka/doka-identite-logo.webp", width: 1672, height: 941, alt: "doka — made for every day" },
+      { url: "/images/doka/doka-identite-logo.webp", width: 1672, height: 941, alt: "Logo doka sur fond orange" },
     ],
   },
   twitter: { card: "summary_large_image" },
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <SiteLoader />
         <a className="skip-link" href="#contenu">
           Aller au contenu
         </a>

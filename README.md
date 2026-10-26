@@ -1,7 +1,7 @@
 # Doka Coffee Shop — site web
 
 Site vitrine de **Doka**, coffee shop de spécialité 100 % à emporter, 15 rue Rambuteau, Paris 4e.
-_Made for every day._
+_Fait pour tous les jours._
 
 Next.js 16 (App Router) · React 19 · TypeScript strict · Tailwind CSS 4 + CSS sur mesure · GSAP (ScrollTrigger, SplitText, Flip) · Three.js (scène du hero, chargée à la demande) · Playwright.
 
@@ -45,37 +45,40 @@ Tout le contenu factuel est centralisé ; la mise en page ne contient aucun prix
 | Quoi                                    | Où                                    |
 | --------------------------------------- | ------------------------------------- |
 | Produits, prix, descriptions, options   | `src/data/products.ts`                |
-| Catégories (carte et page produits)     | `src/data/categories.ts`              |
+| Rubriques et filtres de la carte        | `src/data/categories.ts`              |
 | Adresse, horaires, accès, Instagram, mentions légales | `src/data/site-config.ts` |
 | Photos et textes alternatifs (manifeste des médias) | `src/data/media.ts` — détail dans `docs/MEDIAS.md` |
 
 - Un prix inconnu s'écrit `price: null` : le site affiche « Prix au comptoir », jamais un tarif inventé.
-- Un produit sans photo authentique reçoit automatiquement une carte graphique (la boisson vue de dessus), clairement illustrative. Une photo n'est jamais réutilisée pour un autre produit.
+- Chaque produit a une photo : un visuel officiel Doka quand il existe, sinon une photo d'illustration libre de droits (CC0 / domaine public, crédits dans `docs/MEDIAS.md`). Sans photo, une carte graphique (la boisson vue de dessus) prend le relais. Une photo n'est jamais réutilisée pour un autre produit.
 - Pour masquer les horaires partout : `hours.show = false` dans `site-config.ts`.
-- Les fiches produits (`/produits/[slug]`) sont générées depuis le catalogue : ajouter un produit crée sa page, son entrée de sitemap et ses données structurées.
+- Les fiches produits (`/produits/[slug]`) sont générées depuis le catalogue : ajouter un produit crée sa page, son entrée de sitemap et ses données structurées. Une fiche renommée garde son ancienne adresse via `renamedSlugs` (redirection permanente).
+- Tout le texte du site est en français ; seuls le nom « Doka Coffee Shop », le compte Instagram et les noms de boissons sans équivalent (espresso, latte, flat white…) restent tels quels.
 
 ## Architecture
 
 ```text
 src/
   app/                    routes (accueil, la-carte, nos-favoris, produits/[slug], esprit-doka,
-                          le-coffee-shop, nous-trouver, mentions-legales, confidentialite),
+                          nous-trouver, mentions-legales, confidentialite),
                           sitemap.ts, robots.ts, not-found.tsx, icon.svg
+                          (/produits → /la-carte et /le-coffee-shop → /esprit-doka : redirections)
   components/
     brand/                logo officiel vectorisé (lettres séparées, jamais déformées)
-    layout/               Header, FullscreenMenu, PageTransition, Footer, BackToTop
-    home/                 sections de l'accueil ; hero/ = expérience « Your coffee. On the go. »
+    layout/               Header, FullscreenMenu, SiteLoader, PageTransition, Footer, BackToTop
+    home/                 sections de l'accueil ; hero/ = expérience « Ton café. À emporter. »
       hero/scene/         scène Three.js : maquette, personnages, textures, timing
-    menu/                 MenuBoard (carte filtrable), MenuCategoryTabs
-    products/             ProductCard, ProductVisual, ProductGallery, ProductDetail
+    menu/                 MenuBoard (carte filtrable, photo par produit), MenuCategoryTabs
+    products/             ProductCard, ProductVisual, ProductDetail
     favorites/            sélection éditoriale, favoris du visiteur
-    gallery/              ImageGallery, Lightbox
-    location/             LocationCard, OpenStatus, MapConsent, Faq
+    gallery/              ImageGallery (le lieu, dans L'esprit Doka), Lightbox
+    location/             LocationCard (avec la carte Google Maps), OpenStatus, Faq
     motion/               AnimatedHeading, RevealImage, CoffeeFlow
     ui/                   DokaButton, DLink, FavoriteButton, AnimatedPrice, DokaMarquee
   data/                   catalogue, catégories, configuration, manifeste des médias
   hooks/                  use-favorites (localStorage), use-hydrated
-  lib/                    gsap (plugins, courbes Doka), seo (métadonnées, JSON-LD)
+  lib/                    gsap (plugins, courbes Doka), seo (métadonnées, JSON-LD),
+                          entrance (synchronise les animations d'entrée avec chargement et transitions)
   styles/                 tokens.css, base.css, ui.css, layout.css, home.css, pages.css
 media/originals/          photos sources (non déployées)
 public/images/doka/       versions web (WebP maître + AVIF), posters du hero
@@ -97,13 +100,17 @@ Un langage commun (courbes `doka.out`, `doka.inOut`, `doka.pop` dans `src/lib/gs
 
 | Signature | Où | Ce qui se passe |
 | --- | --- | --- |
-| **The Doka Moment** — « Your coffee. On the go. » | Hero de l'accueil | Maquette 3D de la devanture : un client arrive, le barista se retourne, attrape un gobelet Doka, le tend ; au passage de main « made for every day » apparaît ; le client repart. Caméra qui suit la souris ; au scroll, plongée vers le gobelet puis nappe orange qui s'ouvre depuis lui. |
-| **Everyday Coffee** | Accueil, section 2 | Section collante : « le bon café, / tous les jours, / dès 1,50 € », le prix quitte la phrase et grossit en comptant, puis l'échelle des prix se dessine et le fond passe de l'orange au crème. |
-| **The Coffee Flow** | Entre les grandes sections (accueil, esprit) | Transition SVG organique : le liquide de la section suivante monte en vagues, précédé d'un filet de lait ou de crema. |
+| **Le moment Doka** — « Ton café. À emporter. » | Hero de l'accueil | Maquette 3D de la devanture : un client arrive, le barista se retourne, attrape un gobelet Doka, le tend ; au passage de main « fait pour tous les jours » apparaît ; le client repart. Pastilles orange (prix de l'espresso, note Google, chaud ou glacé, lait d'avoine offert) qui flottent. Caméra qui suit la souris ; au scroll, plongée vers le gobelet puis nappe orange qui s'ouvre depuis lui. |
+| **Le café du quotidien** | Accueil, section 2 | Section collante : « le bon café, / tous les jours, / dès 1,50 € », le prix quitte la phrase et grossit en comptant, puis l'échelle des prix se dessine et le fond passe de l'orange au crème. |
+| **La vague de café** | Entre les grandes sections (accueil, esprit) | Transition SVG organique : le liquide de la section suivante monte en vagues, précédé d'un filet de lait ou de crema. |
 
-Autres moments : intro logo (CSS, < 1,2 s, une fois par session), transition de page en nappe orange (≈ 0,9 s), menu mobile qui gonfle depuis le bouton, titres révélés par masques (SplitText), photos révélées selon leur sujet (le café « coule » de haut en bas, le matcha s'ouvre depuis le point du « o »), frise horizontale des incontournables, carte filtrée avec GSAP Flip, cœurs qui éclatent en pastilles, cartes produits en profondeur, footer dont les lettres du logo se posent une à une.
+Autres moments :
 
-**Mouvement réduit** (`prefers-reduced-motion`) : pas d'intro, pas de 3D (poster), sections narratives affichées en clair, navigation sans nappe. **Sans JavaScript**, tout le contenu reste lisible (les états « avant animation » n'existent que si JS tourne, avec un filet de sécurité CSS).
+- **Écran de chargement** (`SiteLoader`, 100 % CSS, ≈ 2 s à chaque chargement complet) : nappe orange, lettres du logo posées une à une, signature, jauge et compteur jusqu'à 100 %, puis la nappe se lève en s'arrondissant.
+- **Transition de page** (`PageTransition`, ≈ 1,7 s) : cercle orange qui s'ouvre depuis le point cliqué, lettres du logo et nom de la page d'arrivée, puis la nappe se lève. La page n'est jamais révélée avant d'être prête ; le dernier clic gagne en cas de clics rapides. Les titres de la nouvelle page attendent l'ouverture (`lib/entrance.ts`).
+- Menu mobile qui gonfle depuis le bouton, titres révélés par masques (SplitText), photos révélées selon leur sujet (le café « coule » de haut en bas, le matcha s'ouvre depuis le point du « o »), frise horizontale des incontournables, carte filtrée en cascade (la liste reste dans le flux, la carte revient en haut de l'écran), cœurs qui éclatent en pastilles, cartes produits en profondeur, footer dont les lettres du logo se posent une à une.
+
+**Mouvement réduit** (`prefers-reduced-motion`) : pas d'écran de chargement, pas de 3D (poster), sections narratives affichées en clair, navigation sans nappe. **Sans JavaScript**, tout le contenu reste lisible (les états « avant animation » n'existent que si JS tourne, avec un filet de sécurité CSS).
 
 ## La scène 3D du hero
 
@@ -114,21 +121,19 @@ Autres moments : intro logo (CSS, < 1,2 s, une fois par session), transition de 
 
 ## Qualité
 
-- **SEO** : métadonnées par page, URL canoniques, Open Graph, `sitemap.xml`, `robots.txt`, données structurées `CafeOrCoffeeShop` (adresse, horaires, carte) et `MenuItem` par produit. Aucune note, aucun avis.
+- **SEO** : métadonnées par page, URL canoniques, Open Graph, `sitemap.xml`, `robots.txt`, données structurées `CafeOrCoffeeShop` (adresse, horaires, carte) et `MenuItem` par produit. La note Google n'apparaît que dans une pastille du hero (`siteConfig.googleRating`), jamais dans les données structurées (Google ignore les avis auto-déclarés).
 - **Accessibilité** : lien d'évitement, focus visibles, un seul `h1` par page, onglets ARIA au clavier, menu et visionneuse modaux (focus piégé, Échap, page inerte derrière), FAQ en `<details>`, textes alternatifs, contrastes vérifiés.
-- **Vie privée** : aucun traceur. Favoris et choix de carte en `localStorage`, effaçables depuis `/confidentialite`. Google Maps chargé seulement après accord.
+- **Vie privée** : aucun traceur propre au site. Favoris en `localStorage`, effaçables depuis `/confidentialite`. La carte Google Maps de « Nous trouver » est affichée directement (Google peut y déposer ses cookies : c'est indiqué sur `/confidentialite`).
 
 ### Mesures effectuées (conteneur sans GPU, Chromium logiciel)
 
-Lighthouse 12, profil mobile simulé (4G lente, processeur ×4), build de production :
+Lighthouse 12, profil mobile simulé (4G lente, processeur ×4), build de production. Mesures **antérieures** à la refonte d'octobre 2026 (pages fusionnées, écran de chargement, carte Google Maps directe, photos produits) : à refaire.
 
 | Page | Performance | Accessibilité | Bonnes pratiques | SEO | LCP | TBT | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `/` | 65 | 100 | 100 | 100 | 4,0 s | 820 ms | 0 |
 | `/la-carte` | 84 | 100 | 100 | 100 | 3,4 s | 300 ms | 0 |
-| `/produits` | 81 | 100 | 100 | 100 | 3,6 s | 360 ms | 0 |
 | `/esprit-doka` | 77 | 100 | 100 | 100 | 3,4 s | 590 ms | 0,001 |
-| `/le-coffee-shop` | 70 | 100 | 100 | 100 | 4,4 s | 540 ms | 0 |
 | `/nous-trouver` | 82 | 100 | 100 | 100 | 3,4 s | 390 ms | 0 |
 
 Lecture honnête de ces chiffres :
@@ -146,7 +151,7 @@ npm run test:e2e
 # ou avec un Chromium existant : CHROME_PATH=/chemin/vers/chrome npm run test:e2e
 ```
 
-Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres, fiche produit, ajout de favori, persistance après rechargement, suppression, coffee shop et visionneuse, itinéraire, retour à l'accueil, menu mobile (focus, verrouillage du scroll, fermeture), navigation rapide et précédent/suivant, mouvement réduit, statut 200 de toutes les pages, liens internes, images non cassées, absence d'erreurs console, pas de débordement horizontal sur mobile.
+Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres, fiche produit, ajout de favori, persistance après rechargement, suppression, L'esprit Doka (le lieu) et visionneuse, itinéraire et carte Google Maps, retour à l'accueil, menu mobile (focus, verrouillage du scroll, fermeture), navigation rapide et précédent/suivant, mouvement réduit, statut 200 de toutes les pages, redirections des anciennes adresses, liens internes, images non cassées, absence d'erreurs console, pas de débordement horizontal sur mobile.
 
 ---
 
@@ -155,12 +160,14 @@ Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres
 1. **Photos** — les fichiers fournis s'appellent « Image ChatGPT… ». Confirmer qu'ils sont validés par Doka comme visuels officiels. Points visibles : tableaux de prix sur la façade (`3,3`, `3,5`…) différents de la carte, n° « 11 » sur la porte voisine, enseigne et gobelet bleu marine sur la photo du gobelet échangé.
 2. **Prix** de la carte officielle et **applicabilité des options** (version glacée, avoine, sirop, extra shot) boisson par boisson.
 3. **Horaires** — repris de la fiche Google (lun.–ven. 8h–18h, sam.–dim. 9h–19h).
-4. **Descriptions** : composition du Coconut Matcha Cloud, cookies (parfums, prix), sélection des « incontournables ».
-5. **Accès** : stations de métro indiquées (Rambuteau, Hôtel de Ville, Châtelet – Les Halles).
-6. **Mentions légales** : e-mail de contact (absent : renvoi vers Instagram), directeur de la publication, siège social — d'après le registre.
-7. **Domaine** final (`NEXT_PUBLIC_SITE_URL`).
+4. **Descriptions** : composition du nuage coco-matcha (nommé « Coconut Matcha Cloud » sur le tableau), cookies (parfums, prix), sélection des « incontournables ».
+5. **Note Google** affichée dans le hero (`siteConfig.googleRating`, 5,0) : à tenir à jour.
+6. **Accès** : stations de métro indiquées (Rambuteau, Hôtel de Ville, Châtelet – Les Halles).
+7. **Mentions légales** : e-mail de contact (absent : renvoi vers Instagram), directeur de la publication, siège social — d'après le registre.
+8. **Domaine** final (`NEXT_PUBLIC_SITE_URL`).
+9. **Carte Google Maps sans bandeau de consentement** : affichée directement à la demande de Doka. Google peut déposer des cookies ; selon les recommandations de la CNIL, un recueil du consentement peut être requis.
 
 ### Ressources qui amélioreraient le site
 
 - Originaux haute définition (le livrable 3840 × 2160 n'est pas atteignable avec des sources en 1672 × 941 ; aucune image n'a été agrandie).
-- Photos réelles de l'intérieur, du comptoir, de l'équipe, et une photo par boisson (cappuccino, flat white, chaï, chocolat, thé, Coconut Matcha Cloud).
+- Photos réelles de l'intérieur, du comptoir, de l'équipe, et une vraie photo Doka par boisson pour remplacer les photos d'illustration libres de droits (allongé, double, americano, cappuccino, flat white, chaï, chocolat, thé, nuage coco-matcha).

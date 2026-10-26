@@ -8,7 +8,7 @@ const range = priceRange();
 
 export const metadata: Metadata = pageMetadata({
   title: "La carte",
-  description: `La carte de Doka, coffee shop à emporter rue Rambuteau : espresso ${formatPrice(productsBySlug.espresso.price)}, latte, flat white, matcha latte, Coconut Matcha Cloud. De ${formatPrice(range.min)} à ${formatPrice(range.max)}, chaud ou glacé.`,
+  description: `La carte de Doka, coffee shop à emporter rue Rambuteau : espresso ${formatPrice(productsBySlug.espresso.price)}, latte, flat white, matcha latte, nuage coco-matcha, chaï, chocolat chaud et cookies. De ${formatPrice(range.min)} à ${formatPrice(range.max)}, chaud ou glacé.`,
   path: "/la-carte",
 });
 
@@ -20,10 +20,10 @@ export default function CartePage() {
           la carte
         </AnimatedHeading>
         <div className="carte-hero__meta">
-          <p className="brandline carte-hero__line">Classics, specials, options.</p>
+          <p className="brandline carte-hero__line">Cafés, matcha, gourmandises.</p>
           <p className="carte-hero__sub">
-            Hot or cold, morning to evening. De {formatPrice(range.min)} à {formatPrice(range.max)}, avec la version
-            glacée et le lait d&apos;avoine sans supplément.
+            Chaud ou glacé, du matin au soir. De {formatPrice(range.min)} à {formatPrice(range.max)}, avec la version
+            glacée et le lait d&apos;avoine sans supplément. Touche une boisson pour voir sa fiche.
           </p>
         </div>
       </header>

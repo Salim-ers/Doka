@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { HeroExperience } from "@/components/home/hero/HeroExperience";
-import { IntroOverlay } from "@/components/home/IntroOverlay";
 import { EverydayCoffee } from "@/components/home/EverydayCoffee";
 import { Incontournables } from "@/components/home/Incontournables";
 import { MatchaSection } from "@/components/home/MatchaSection";
@@ -14,7 +13,7 @@ import { formatPrice, productsBySlug } from "@/data/products";
 export const metadata: Metadata = {
   ...pageMetadata({
     title: "Doka Coffee Shop — café de spécialité à emporter, Paris 4e",
-    description: `Doka, coffee shop 100 % à emporter au 15 rue Rambuteau (Paris 4e). Espresso à ${formatPrice(productsBySlug.espresso.price)}, latte, matcha, Coconut Matcha Cloud et cookies. Made for every day.`,
+    description: `Doka, coffee shop 100 % à emporter au 15 rue Rambuteau (Paris 4e). Espresso à ${formatPrice(productsBySlug.espresso.price)}, latte, matcha, nuage coco-matcha et cookies. Fait pour tous les jours.`,
     path: "/",
   }),
   title: { absolute: "Doka Coffee Shop — café de spécialité à emporter, Paris 4e" },
@@ -23,7 +22,6 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <IntroOverlay />
       <HeroExperience />
       <EverydayCoffee />
       <Incontournables />

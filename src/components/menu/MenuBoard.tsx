@@ -2,18 +2,21 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Plus } from "lucide-react";
-import { gsap, Flip, useGSAP } from "@/lib/gsap";
-import { menuFilters, type MenuFilterId } from "@/data/categories";
-import { bringYourOwnCup, drinkOptions, formatPrice, products, type Product } from "@/data/products";
+import { gsap, useGSAP } from "@/lib/gsap";
+import { menuFilters, menuSections } from "@/data/categories";
+import { bringYourOwnCup, drinkOptions, formatPrice, products } from "@/data/products";
 import { DLink } from "@/components/ui/DLink";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
+import { ProductVisual } from "@/components/products/ProductVisual";
 import { MenuCategoryTabs } from "./MenuCategoryTabs";
 
 const URL_EVENT = "doka:url";
 
-function readFilter(): MenuFilterId {
+type FilterId = (typeof menuFilters)[number]["id"];
+
+function readFilter(): FilterId {
   const q = new URLSearchParams(window.location.search).get("categorie");
-  return (menuFilters.find((f) => f.id === q)?.id ?? "all") as MenuFilterId;
+  return menuFilters.find((f) => f.id === q)?.id ?? "all";
 }
 function subscribeUrl(cb: () => void) {
   window.addEventListener(URL_EVENT, cb);
@@ -24,31 +27,25 @@ function subscribeUrl(cb: () => void) {
   };
 }
 
-const SECTIONS: { id: Product["boardSection"]; title: string }[] = [
-  { id: "classics", title: "classics" },
-  { id: "specials", title: "specials" },
-  { id: "sweets", title: "sweets" },
-];
-
 /**
- * La carte, version tableau Doka : rubriques en minuscules grasses, lignes nom … prix.
- * Filtres en onglets (synchronisés avec l'URL ?categorie=), réorganisation animée
- * avec GSAP Flip (sans saut de mise en page), détails dépliables, favoris.
+ * La carte : une rubrique par famille (cafés, matcha, autres boissons, gourmandises),
+ * chaque ligne avec sa photo, son prix, son cœur et ses détails dépliables.
+ * Filtres en onglets synchronisés avec l'URL (?categorie=). Au changement de filtre,
+ * la liste reste dans le flux de la page (aucun élément sorti du flux, pas de saut) :
+ * on ramène le haut de la carte à l'écran puis les lignes affichées apparaissent en cascade.
  */
 export function MenuBoard() {
   const root = useRef<HTMLDivElement>(null);
+  const board = useRef<HTMLDivElement>(null);
   // Le filtre vit dans l'URL (?categorie=) : lien partageable, rechargement cohérent
-  const filter = useSyncExternalStore(subscribeUrl, readFilter, () => "all" as MenuFilterId);
+  const filter = useSyncExternalStore(subscribeUrl, readFilter, () => "all" as FilterId);
   const [open, setOpen] = useState<string | null>(null);
-  const flipState = useRef<Flip.FlipState | null>(null);
+  const changed = useRef(false);
 
   const change = useCallback(
     (id: string) => {
       if (id === filter) return;
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!reduce && root.current) {
-        flipState.current = Flip.getState(root.current.querySelectorAll("[data-flip]"));
-      }
+      changed.current = true;
       setOpen(null);
       const url = new URL(window.location.href);
       if (id === "all") url.searchParams.delete("categorie");
@@ -59,20 +56,26 @@ export function MenuBoard() {
     [filter],
   );
 
+  // Après un changement de filtre : la carte revient en haut de l'écran, puis cascade
   useLayoutEffect(() => {
-    const state = flipState.current;
-    if (!state) return;
-    flipState.current = null;
-    Flip.from(state, {
-      duration: 0.6,
-      ease: "doka.inOut",
-      absolute: true,
-      nested: true,
-      prune: true,
-      onEnter: (els) =>
-        gsap.fromTo(els, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.03, delay: 0.15 }),
-      onLeave: (els) => gsap.to(els, { autoAlpha: 0, y: -12, duration: 0.25 }),
-    });
+    if (!changed.current || !board.current) return;
+    changed.current = false;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // en remontant, l'en-tête réapparaît : on garde la place de l'en-tête et des onglets
+    const tabs = root.current?.querySelector<HTMLElement>(".mb-tabs");
+    const header = document.querySelector<HTMLElement>(".site-header");
+    const offset = (header?.offsetHeight ?? 0) + (tabs?.offsetHeight ?? 0) + 28;
+    const top = board.current.getBoundingClientRect().top + window.scrollY - offset;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
+    if (reduce) return;
+    const items = board.current.querySelectorAll(
+      ".mb-section:not([hidden]) .mb-section__title, .mb-row:not([hidden]), .mb-options:not([hidden])",
+    );
+    gsap.fromTo(
+      items,
+      { autoAlpha: 0, y: 18 },
+      { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.03, ease: "doka.out", overwrite: true },
+    );
   }, [filter]);
 
   // Apparition initiale des lignes
@@ -84,7 +87,7 @@ export function MenuBoard() {
           y: 26,
           autoAlpha: 0,
           duration: 0.7,
-          stagger: 0.035,
+          stagger: 0.03,
           delay: 0.2,
           ease: "doka.out",
         });
@@ -96,17 +99,16 @@ export function MenuBoard() {
 
   const active = menuFilters.find((f) => f.id === filter) ?? menuFilters[0];
   const showOptions = filter === "all" || filter === "options";
-  const visible = (p: Product) => filter !== "options" && active.match(p);
-  const tabs = menuFilters.map((f) => ({
-    id: f.id,
-    label: f.label,
-  }));
+  const sectionVisible = (id: string) => filter === "all" || filter === id;
+  const count = products.filter((p) =>
+    sectionVisible(menuSections.find((s) => s.family === p.family)?.id ?? ""),
+  ).length;
 
   return (
     <div ref={root} className="mb">
       <div className="mb-tabs">
         <MenuCategoryTabs
-          tabs={tabs}
+          tabs={menuFilters}
           active={filter}
           onChange={change}
           label="Filtrer la carte"
@@ -114,20 +116,17 @@ export function MenuBoard() {
         />
       </div>
 
-      <div id="carte-liste" className="mb-board" role="tabpanel" aria-label={`Carte : ${active.label}`}>
+      <div ref={board} id="carte-liste" className="mb-board" role="tabpanel" aria-label={`Carte : ${active.label}`}>
         <p className="sr-only" aria-live="polite">
-          {filter === "options" ? "Options et suppléments" : `${products.filter(visible).length} produits affichés`}
+          {filter === "options" ? "Options et suppléments" : `${count} produits affichés`}
         </p>
-        {SECTIONS.map((section) => {
-          const items = products.filter((p) => p.boardSection === section.id);
-          const any = items.some(visible);
+        {menuSections.map((section) => {
+          const items = products.filter((p) => p.family === section.family);
           return (
             <section
               key={section.id}
               className="mb-section"
-              data-flip
-              data-flip-id={`s-${section.id}`}
-              hidden={!any}
+              hidden={!sectionVisible(section.id)}
               aria-labelledby={`mb-${section.id}`}
             >
               <h2 id={`mb-${section.id}`} className="mb-section__title display">
@@ -137,15 +136,11 @@ export function MenuBoard() {
                 {items.map((p) => {
                   const isOpen = open === p.slug;
                   return (
-                    <li
-                      key={p.slug}
-                      className="mb-row"
-                      data-flip
-                      data-flip-id={p.slug}
-                      hidden={!visible(p)}
-                      data-open={isOpen ? "" : undefined}
-                    >
+                    <li key={p.slug} className="mb-row" data-open={isOpen ? "" : undefined}>
                       <div className="mb-row__line">
+                        <div className="mb-row__thumb" aria-hidden="true">
+                          <ProductVisual product={p} sizes="80px" thumb />
+                        </div>
                         <DLink href={`/produits/${p.slug}`} className="mb-row__name">
                           {p.name}
                           {p.signature && <span className="mb-badge">signature</span>}
@@ -187,13 +182,7 @@ export function MenuBoard() {
           );
         })}
 
-        <section
-          className="mb-options"
-          data-flip
-          data-flip-id="options"
-          hidden={!showOptions}
-          aria-labelledby="mb-options"
-        >
+        <section className="mb-options" hidden={!showOptions} aria-labelledby="mb-options">
           <h2 id="mb-options" className="mb-section__title display">
             options
           </h2>

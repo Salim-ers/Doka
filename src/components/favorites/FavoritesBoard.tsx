@@ -75,7 +75,7 @@ export function FavoritesBoard() {
             return (
               <li key={slug} data-slug={slug} className="favs-item">
                 <div className="favs-item__visual">
-                  <ProductVisual product={p} sizes="120px" />
+                  <ProductVisual product={p} sizes="120px" thumb />
                 </div>
                 <div className="favs-item__body">
                   <DLink href={`/produits/${p.slug}`} className="favs-item__name">

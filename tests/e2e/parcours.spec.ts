@@ -5,7 +5,7 @@ test.describe("Parcours principal", () => {
   test("1-2. Accueil : arrivée puis parcours complet jusqu'au footer", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: /your coffee/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /ton café/i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Découvrir la carte" }).first()).toBeVisible();
     await scrollThrough(page);
     await expect(page.locator(".site-footer")).toBeInViewport();
@@ -26,8 +26,8 @@ test.describe("Parcours principal", () => {
     await page.getByRole("tab", { name: "Matcha" }).click();
     await expect(page).toHaveURL(/categorie=matcha/);
     const list = page.locator("#carte-liste");
-    await expect(list.getByRole("link", { name: "Matcha Latte", exact: true })).toBeVisible();
-    await expect(list.getByRole("link", { name: /Coconut Matcha Cloud/ })).toBeVisible();
+    await expect(list.getByRole("link", { name: "Matcha latte", exact: true })).toBeVisible();
+    await expect(list.getByRole("link", { name: /Nuage coco-matcha/ })).toBeVisible();
     await expect(list.getByRole("link", { name: "Espresso", exact: true })).toBeHidden();
     await page.getByRole("tab", { name: "Options" }).click();
     await expect(page.locator(".mb-options").getByText("Sirop vanille ou caramel", { exact: true })).toBeVisible();
@@ -35,7 +35,7 @@ test.describe("Parcours principal", () => {
     await expect(list.getByRole("link", { name: "Espresso", exact: true })).toBeVisible();
 
     // 5. consulter un produit
-    await list.getByRole("link", { name: "Matcha Latte", exact: true }).click();
+    await list.getByRole("link", { name: "Matcha latte", exact: true }).click();
     await expect(page).toHaveURL(/\/produits\/matcha-latte$/);
     await expect(page.getByRole("heading", { level: 1, name: /matcha latte/i })).toBeVisible();
     await expect(page.getByText("4,00 €").first()).toBeAttached();
@@ -57,21 +57,24 @@ test.describe("Parcours principal", () => {
     // 8. supprimer depuis « Nos favoris »
     await page.getByRole("link", { name: "Mes favoris : 1" }).click();
     await expect(page).toHaveURL(/\/nos-favoris$/);
-    await page.getByRole("button", { name: "Retirer Matcha Latte des favoris" }).click();
+    await page.getByRole("button", { name: "Retirer Matcha latte des favoris" }).click();
     await expect(page.getByText(/rien ici, pour l.instant/i)).toBeVisible();
     await expect(page.getByRole("link", { name: "Mes favoris : 0" })).toBeVisible();
     expect(errors).toEqual([]);
   });
 
-  test("9-11. Coffee shop, visionneuse, itinéraire, retour à l'accueil", async ({ page }) => {
+  test("9-11. L'esprit Doka et le lieu, visionneuse, itinéraire et carte, retour à l'accueil", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/");
     await page
       .getByRole("navigation", { name: "Navigation principale" })
-      .getByRole("link", { name: "Le coffee shop" })
+      .getByRole("link", { name: "L'esprit Doka" })
       .click();
-    await expect(page).toHaveURL(/\/le-coffee-shop$/);
-    await expect(page.getByRole("heading", { level: 1, name: "le coffee shop" })).toBeVisible();
+    await expect(page).toHaveURL(/\/esprit-doka$/);
+    await expect(page.getByRole("heading", { level: 1, name: /un excellent café/ })).toBeVisible();
+    await expectCurtainHidden(page);
+    await page.locator("#le-lieu").scrollIntoViewIfNeeded();
+    await expect(page.getByRole("heading", { level: 2, name: "le lieu" })).toBeAttached();
 
     await page.getByRole("button", { name: "Agrandir la photo" }).first().click();
     const dialog = page.getByRole("dialog", { name: "Photo agrandie" });
@@ -86,7 +89,7 @@ test.describe("Parcours principal", () => {
     const itin = page.getByRole("link", { name: /Itinéraire/ }).first();
     await expect(itin).toHaveAttribute("href", /google\.com\/maps\/dir\/\?api=1&destination=/);
     await expect(itin).toHaveAttribute("target", "_blank");
-    await expect(page.locator("iframe")).toHaveCount(0); // carte non chargée sans accord
+    await expect(page.locator(".map iframe")).toHaveAttribute("src", /google\.com\/maps/); // vraie carte Google Maps
 
     // 11. retour à l'accueil par le logo
     await page.getByRole("link", { name: "Doka, retour à l'accueil" }).click();
@@ -99,7 +102,7 @@ test.describe("Parcours principal", () => {
     const errors = trackErrors(page);
     await page.goto("/la-carte");
     const nav = page.getByRole("navigation", { name: "Navigation principale" });
-    for (const name of ["Nos produits", "L'esprit Doka", "Nous trouver", "Nos favoris"]) {
+    for (const name of ["L'esprit Doka", "Nous trouver", "Accueil", "Nos favoris"]) {
       await nav.getByRole("link", { name }).click();
       await page.waitForTimeout(120);
     }
@@ -119,12 +122,10 @@ test.describe("Parcours principal", () => {
       "/",
       "/la-carte",
       "/nos-favoris",
-      "/produits",
       "/produits/espresso",
-      "/produits/coconut-matcha-cloud",
+      "/produits/nuage-coco-matcha",
       "/produits/cookies",
       "/esprit-doka",
-      "/le-coffee-shop",
       "/nous-trouver",
       "/mentions-legales",
       "/confidentialite",
@@ -151,5 +152,15 @@ test.describe("Parcours principal", () => {
       expect(res.status(), `lien interne ${h}`).toBe(200);
     }
     expect((await request.get("/page-inexistante")).status()).toBe(404);
+    // pages fusionnées et fiches renommées : redirections permanentes
+    for (const [from, to] of [
+      ["/produits", "/la-carte"],
+      ["/le-coffee-shop", "/esprit-doka#le-lieu"],
+      ["/produits/coconut-matcha-cloud", "/produits/nuage-coco-matcha"],
+    ]) {
+      const res = await request.get(from, { maxRedirects: 0 });
+      expect(res.status(), from).toBe(308);
+      expect(res.headers()["location"], from).toBe(to);
+    }
   });
 });

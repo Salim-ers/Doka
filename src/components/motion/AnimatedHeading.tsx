@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import clsx from "clsx";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
+import { entranceDelay } from "@/lib/entrance";
 
 type Tag = "h1" | "h2" | "h3" | "p";
 type Mode = "lines" | "words" | "chars";
@@ -61,7 +62,7 @@ export function AnimatedHeading({
               duration: mode === "chars" ? 0.9 : 1.05,
               ease: mode === "chars" ? "doka.pop" : "doka.out",
               stagger: mode === "chars" ? 0.025 : mode === "words" ? 0.05 : 0.09,
-              delay,
+              delay: immediate ? delay + entranceDelay() : delay,
               scrollTrigger: immediate ? undefined : { trigger: el, start, once: true },
             });
             return anim;

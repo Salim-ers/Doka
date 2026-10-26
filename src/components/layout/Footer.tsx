@@ -59,16 +59,18 @@ export function Footer() {
       </h2>
       <div className="footer-top">
         <p className="footer-sign display">
-          made for
+          fait pour
           <br />
-          every day.
+          tous les jours.
         </p>
-        <p className="footer-promise brandline">Specialty coffee — made for all. Hot or cold, morning to evening.</p>
+        <p className="footer-promise brandline">
+          Du café de spécialité, pour tout le monde. Chaud ou glacé, du matin au soir.
+        </p>
       </div>
 
       <div className="footer-cols">
         <div>
-          <h3 className="footer-h">Le coffee shop</h3>
+          <h3 className="footer-h">Adresse</h3>
           <address>
             {siteConfig.address.street}
             <br />
@@ -102,7 +104,7 @@ export function Footer() {
             ))}
           </ul>
         </nav>
-        <div>
+        <div className="footer-follow">
           <h3 className="footer-h">Suivre</h3>
           <a className="footer-link" href={siteConfig.instagram.url} target="_blank" rel="noopener noreferrer">
             Instagram {siteConfig.instagram.handle}

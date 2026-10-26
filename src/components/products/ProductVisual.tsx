@@ -57,27 +57,35 @@ type Props = {
   sizes: string;
   className?: string;
   priority?: boolean;
-  /** Recadrage du visuel photo. */
+  /** Recadrage forcé ; sinon celui du média, « cover » par défaut. */
   fit?: "cover" | "contain";
+  /** Petite vignette carrée (carte, favoris) : recadrée sur la boisson, texte alternatif vide (nom à côté). */
+  thumb?: boolean;
 };
 
-export function ProductVisual({ product, sizes, className, priority, fit = "cover" }: Props) {
+export function ProductVisual({ product, sizes, className, priority, fit, thumb }: Props) {
   if (product.media) {
     const m = media[product.media];
-    const objectFit = m.fit ?? fit;
+    const objectFit = thumb ? "cover" : (fit ?? m.fit ?? "cover");
+    const focus = (thumb && m.thumb?.focus) || m.focus;
+    const zoom = thumb ? m.thumb?.zoom : undefined;
     return (
       <div
         className={clsx("product-visual", "product-visual--photo", className)}
-        style={m.matte ? { background: m.matte } : undefined}
+        style={m.matte && objectFit === "contain" ? { background: m.matte } : undefined}
       >
         <Image
           src={m.file}
-          alt={m.alt}
+          alt={thumb ? "" : m.alt}
           fill
           sizes={sizes}
           quality={80}
           priority={priority}
-          style={{ objectFit, objectPosition: m.focus }}
+          style={{
+            objectFit,
+            objectPosition: focus,
+            ...(zoom ? { transform: `scale(${zoom})`, transformOrigin: focus } : {}),
+          }}
         />
       </div>
     );

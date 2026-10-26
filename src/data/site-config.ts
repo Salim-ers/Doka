@@ -6,10 +6,10 @@
 export const siteConfig = {
   name: "Doka Coffee Shop",
   shortName: "Doka",
-  tagline: "Made for every day",
-  promise: "Specialty coffee — made for all",
+  tagline: "Fait pour tous les jours",
+  promise: "Du café de spécialité, pour tout le monde",
   description:
-    "Doka, coffee shop de spécialité 100 % à emporter au 15 rue Rambuteau, Paris 4e. Espresso, latte, matcha, cookies. Made for every day.",
+    "Doka, coffee shop de spécialité 100 % à emporter au 15 rue Rambuteau, Paris 4e. Espresso, latte, matcha, cookies. Fait pour tous les jours.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://doka-coffee-shop.vercel.app",
   locale: "fr_FR",
   takeawayOnly: true,
@@ -29,7 +29,12 @@ export const siteConfig = {
     directions:
       "https://www.google.com/maps/dir/?api=1&destination=Doka+coffee+shop%2C+15+Rue+Rambuteau%2C+75004+Paris",
     place: "https://www.google.com/maps/search/?api=1&query=Doka+coffee+shop%2C+15+Rue+Rambuteau%2C+75004+Paris",
-    embed: "https://www.google.com/maps?q=Doka+coffee+shop,+15+Rue+Rambuteau,+75004+Paris&z=17&output=embed",
+    embed: "https://www.google.com/maps?q=Doka+coffee+shop,+15+Rue+Rambuteau,+75004+Paris&z=17&hl=fr&output=embed",
+  },
+  /** Note Google communiquée par l'établissement (pastille du hero). */
+  googleRating: {
+    value: "5,0",
+    stars: 5,
   },
   /**
    * Horaires relevés sur la fiche Google de l'établissement (oct. 2026),
@@ -86,9 +91,7 @@ export const mainNav = [
   { href: "/", label: "Accueil" },
   { href: "/la-carte", label: "La carte" },
   { href: "/nos-favoris", label: "Nos favoris" },
-  { href: "/produits", label: "Nos produits" },
   { href: "/esprit-doka", label: "L'esprit Doka" },
-  { href: "/le-coffee-shop", label: "Le coffee shop" },
   { href: "/nous-trouver", label: "Nous trouver" },
 ] as const;
 

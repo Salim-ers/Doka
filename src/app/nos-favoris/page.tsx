@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "Nos favoris",
   description:
-    "Les incontournables de Doka (espresso, latte, matcha latte, Coconut Matcha Cloud) et tes propres favoris, enregistrés dans ton navigateur.",
+    "Les incontournables de Doka (espresso, latte, matcha latte, nuage coco-matcha) et tes propres favoris, enregistrés dans ton navigateur.",
   path: "/nos-favoris",
 });
 

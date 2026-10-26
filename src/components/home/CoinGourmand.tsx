@@ -45,8 +45,8 @@ export function CoinGourmand() {
     <section ref={root} className="cg t-paper" aria-labelledby="cg-title">
       <DokaMarquee
         className="cg-marquee"
-        words={["coffee", "matcha", "cookies", "every day"]}
-        label="Coffee, matcha, cookies, every day."
+        words={["café", "matcha", "cookies", "tous les jours"]}
+        label="Café, matcha, cookies, tous les jours."
       />
       <div className="cg-grid">
         <div className="cg-dots" aria-hidden="true" />
@@ -64,7 +64,7 @@ export function CoinGourmand() {
           <p className="lead">Des cookies sur le présentoir, juste à côté du guichet. Avec le café, ou à la place.</p>
           <p className="small muted">Parfums et prix à découvrir au comptoir.</p>
           <div>
-            <DokaButton href="/produits#sweet" variant="ink">
+            <DokaButton href="/la-carte?categorie=gourmandises" variant="ink">
               Voir les gourmandises
             </DokaButton>
           </div>

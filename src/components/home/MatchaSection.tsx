@@ -17,7 +17,7 @@ export function MatchaSection() {
   const root = useRef<HTMLElement>(null);
   const m = media.matcha;
   const latte = productsBySlug["matcha-latte"];
-  const cloud = productsBySlug["coconut-matcha-cloud"];
+  const cloud = productsBySlug["nuage-coco-matcha"];
   const iced = drinkOptions.find((o) => o.id === "iced");
   const oat = drinkOptions.find((o) => o.id === "oat");
 
@@ -69,10 +69,10 @@ export function MatchaSection() {
           <AnimatedHeading id="matcha-title" className="display type-1" mode="chars">
             doka matcha
           </AnimatedHeading>
-          <p className="lead">Your favorite drink. Chaud ou glacé, au même prix.</p>
+          <p className="lead">Ta boisson préférée. Chaud ou glacé, au même prix.</p>
           <ul className="matcha-facts">
             <li>
-              <span className="price">{formatPrice(latte.price)}</span> le Matcha Latte
+              <span className="price">{formatPrice(latte.price)}</span> le {latte.name.toLowerCase()}
             </li>
             <li>
               {iced?.label} et {oat?.label.toLowerCase()}{" "}
@@ -81,14 +81,15 @@ export function MatchaSection() {
                 : `: ${formatPrice(iced?.price ?? 0, { signed: true })}`}
             </li>
             <li>
-              <span className="price">{formatPrice(cloud.price)}</span> le {cloud.name}, la spécialité de la carte
+              <span className="price">{formatPrice(cloud.price)}</span> le {cloud.name.toLowerCase()}, la spécialité de
+              la carte
             </li>
           </ul>
           <div className="matcha-ctas">
-            <DokaButton href="/produits/matcha-latte" variant="cream">
-              Voir le Matcha Latte
+            <DokaButton href={`/produits/${latte.slug}`} variant="cream">
+              Voir le {latte.name.toLowerCase()}
             </DokaButton>
-            <DokaButton href="/produits/coconut-matcha-cloud" variant="outline">
+            <DokaButton href={`/produits/${cloud.slug}`} variant="outline">
               {cloud.name}
             </DokaButton>
           </div>

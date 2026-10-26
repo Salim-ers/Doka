@@ -38,7 +38,7 @@ export function setCanvasFont(family: string) {
   if (family) SANS = family;
 }
 
-/** Enseigne crème : logo noir + « made for everyday », comme sur la vraie façade. */
+/** Enseigne crème : logo noir + la signature, à la place de celle de la vraie façade. */
 export function signTexture(anisotropy: number) {
   const { c, ctx } = canvas(1024, 256);
   ctx.fillStyle = CREAM;
@@ -46,9 +46,16 @@ export function signTexture(anisotropy: number) {
   const logoW = 470;
   drawLogo(ctx, 70, (256 - (LOGO_VIEWBOX.height * logoW) / LOGO_VIEWBOX.width) / 2 - 6, logoW, INK);
   ctx.fillStyle = INK;
-  ctx.font = `500 46px ${SANS}`;
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("made for everyday", 600, 190);
+  const text = "fait pour tous les jours";
+  // la signature française est plus longue : on réduit le corps jusqu'à ce qu'elle tienne
+  let size = 46;
+  ctx.font = `500 ${size}px ${SANS}`;
+  while (ctx.measureText(text).width > 400 && size > 24) {
+    size -= 2;
+    ctx.font = `500 ${size}px ${SANS}`;
+  }
+  ctx.fillText(text, 596, 190);
   return finish(c, anisotropy);
 }
 
@@ -93,8 +100,8 @@ export function boardTexture(anisotropy: number) {
   ctx.fillRect(0, 0, 256, 384);
   ctx.fillStyle = INK;
   const sections: [string, number][] = [
-    ["classics", 7],
-    ["specials", 1],
+    ["classiques", 7],
+    ["spécialités", 1],
     ["options", 3],
   ];
   let y = 46;
@@ -126,7 +133,7 @@ export function blobShadowTexture() {
   return t;
 }
 
-/** Petit cartel « coffee » du montant gauche (présent sur la vraie devanture). */
+/** Petit cartel « café » du montant gauche (présent sur la vraie devanture). */
 export function coffeeLabelTexture(anisotropy: number) {
   const { c, ctx } = canvas(256, 96);
   ctx.fillStyle = "#F7F2E6";
@@ -135,6 +142,6 @@ export function coffeeLabelTexture(anisotropy: number) {
   ctx.font = `600 60px ${SANS}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("coffee", 128, 50);
+  ctx.fillText("café", 128, 50);
   return finish(c, anisotropy);
 }

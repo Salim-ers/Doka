@@ -4,8 +4,9 @@ import { useRef } from "react";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { bringYourOwnCup, drinkOptions, formatPrice, productsBySlug, type Product } from "@/data/products";
-import { categoryOf } from "@/data/categories";
+import { sectionOf } from "@/data/categories";
 import { siteConfig } from "@/data/site-config";
+import { media } from "@/data/media";
 import { DLink } from "@/components/ui/DLink";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
@@ -20,7 +21,7 @@ import { ProductCard } from "./ProductCard";
  */
 export function ProductDetail({ product }: { product: Product }) {
   const root = useRef<HTMLElement>(null);
-  const cat = categoryOf(product);
+  const cat = sectionOf(product);
   const options = drinkOptions.filter((o) => product.options.includes(o.id));
   const suggestions = product.pairsWith
     .map((s) => productsBySlug[s])
@@ -73,6 +74,8 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
           {product.mediaCaption ? (
             <p className="small muted pd-caption">Photo : {product.mediaCaption.toLowerCase()}.</p>
+          ) : product.media && media[product.media].credit ? (
+            <p className="small muted pd-caption">Photo d&apos;illustration, libre de droits.</p>
           ) : (
             <p className="small muted pd-caption">Illustration : la boisson vue de dessus. Photo à venir.</p>
           )}
@@ -82,10 +85,10 @@ export function ProductDetail({ product }: { product: Product }) {
           <nav className="pd-crumbs" aria-label="Fil d'Ariane">
             <ol>
               <li>
-                <DLink href="/produits">Nos produits</DLink>
+                <DLink href="/la-carte">La carte</DLink>
               </li>
               <li>
-                <DLink href={`/produits#${cat.id}`}>{cat.label}</DLink>
+                <DLink href={`/la-carte?categorie=${cat.id}`}>{cat.label}</DLink>
               </li>
               <li aria-current="page">{product.name}</li>
             </ol>

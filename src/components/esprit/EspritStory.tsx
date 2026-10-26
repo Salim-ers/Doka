@@ -7,10 +7,12 @@ import { RevealImage } from "@/components/motion/RevealImage";
 import { CoffeeFlow } from "@/components/motion/CoffeeFlow";
 import { AnimatedHeading } from "@/components/motion/AnimatedHeading";
 import { DokaButton } from "@/components/ui/DokaButton";
+import { ImageGallery } from "@/components/gallery/ImageGallery";
 
 /**
  * L'esprit Doka — narration au scroll, construite uniquement à partir de ce que
- * la marque dit d'elle-même (visuels officiels) et de sa carte.
+ * la marque dit d'elle-même (visuels officiels) et de sa carte : la philosophie,
+ * la signature, le lieu (devanture, guichet, rue), l'identité, la carte.
  */
 export function EspritStory() {
   const root = useRef<HTMLDivElement>(null);
@@ -20,23 +22,23 @@ export function EspritStory() {
 
   const chapters = [
     {
-      en: "specialty coffee",
-      fr: "Du café de spécialité, préparé à la demande au guichet.",
+      big: "café de spécialité",
+      text: "Du café de spécialité, préparé à la demande au guichet.",
     },
     {
-      en: "made for all",
-      fr: `Des prix tenus : l'espresso à ${formatPrice(espresso.price)}, le latte à ${formatPrice(latte.price)}.`,
+      big: "pour tout le monde",
+      text: `Des prix tenus : l'espresso à ${formatPrice(espresso.price)}, le latte à ${formatPrice(latte.price)}.`,
     },
     {
-      en: "hot or cold",
-      fr:
+      big: "chaud ou glacé",
+      text:
         iced?.price === 0
           ? "La version glacée ne coûte rien de plus. Le lait d'avoine non plus."
           : "Chaud ou glacé, selon l'humeur.",
     },
     {
-      en: "morning to evening",
-      fr: "Du premier café du matin à celui de la fin de journée, rue Rambuteau.",
+      big: "du matin au soir",
+      text: "Du premier café du matin à celui de la fin de journée, rue Rambuteau.",
     },
   ];
 
@@ -47,14 +49,14 @@ export function EspritStory() {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         el.classList.add("is-animated");
-        // Chapitres : un seul à la fois, la phrase anglaise de la marque en géant
+        // Chapitres : un seul à la fois, la phrase de la marque en géant
         const items = gsap.utils.toArray<HTMLElement>(".ch-item", el);
         const tl = gsap.timeline({
           scrollTrigger: { trigger: ".ch", start: "top top", end: "bottom bottom", scrub: 0.5 },
         });
         items.forEach((item, i) => {
-          const big = item.querySelector(".ch-item__en");
-          const small = item.querySelector(".ch-item__fr");
+          const big = item.querySelector(".ch-item__big");
+          const small = item.querySelector(".ch-item__text");
           const at = i * 1.2;
           tl.fromTo(
             big,
@@ -82,7 +84,7 @@ export function EspritStory() {
         });
         tl.to({}, { duration: 0.4 });
 
-        // Citation finale : la signature lettre par lettre
+        // Citation : la signature lettre par lettre
         const quote = el.querySelector(".es-quote__text");
         if (quote) {
           const split = SplitText.create(quote, { type: "chars,words", aria: "none" });
@@ -119,24 +121,22 @@ export function EspritStory() {
   return (
     <div ref={root} className="es">
       {/* Chapitres */}
-      <section className="ch t-cream" aria-labelledby="ch-title">
+      <section id="philosophie" className="ch t-cream" aria-labelledby="ch-title">
         <h2 id="ch-title" className="sr-only">
           Ce que Doka dit de lui-même
         </h2>
         <div className="ch-sticky">
           <ol className="ch-list">
             {chapters.map((c) => (
-              <li key={c.en} className="ch-item">
-                <p className="ch-item__en display" lang="en">
-                  {c.en}
-                </p>
-                <p className="ch-item__fr lead">{c.fr}</p>
+              <li key={c.big} className="ch-item">
+                <p className="ch-item__big display">{c.big}</p>
+                <p className="ch-item__text lead">{c.text}</p>
               </li>
             ))}
           </ol>
           <div className="ch-progress" aria-hidden="true">
             {chapters.map((c) => (
-              <span key={c.en} className="ch-progress__dot" />
+              <span key={c.big} className="ch-progress__dot" />
             ))}
           </div>
         </div>
@@ -147,12 +147,13 @@ export function EspritStory() {
       {/* Signature */}
       <section className="es-quote t-orange" aria-label="Signature">
         <blockquote>
-          <p className="es-quote__text display" lang="en">
-            made for every day.
-          </p>
+          <p className="es-quote__text display">fait pour tous les jours.</p>
         </blockquote>
       </section>
-      <CoffeeFlow from="var(--orange)" to="var(--paper)" lead="#FFD2C2" />
+      <CoffeeFlow from="var(--orange)" to="var(--cream)" lead="#FFD2C2" />
+
+      {/* Le lieu : devanture, guichet, rue */}
+      <ImageGallery />
 
       {/* Identité */}
       <section className="es-id t-paper" aria-labelledby="id-title">
@@ -188,7 +189,7 @@ export function EspritStory() {
             <span>avec ton gobelet</span>
           </p>
           <div className="es-board__ctas">
-            <DokaButton href="/la-carte" variant="cream" size="lg">
+            <DokaButton href="/la-carte" variant="orange" size="lg">
               Voir la carte
             </DokaButton>
             <DokaButton href="/nous-trouver" variant="ink" size="lg">

@@ -7,11 +7,10 @@ import { formatHour, siteConfig } from "@/data/site-config";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { InstagramGlyph } from "@/components/ui/icons";
 import { OpenStatus, useParisDay } from "./OpenStatus";
-import { MapConsent } from "./MapConsent";
 
 /**
  * Bloc pratique de « Nous trouver » : adresse (copiable), itinéraire, horaires
- * (jour courant mis en avant), accès, carte sous consentement.
+ * (jour courant mis en avant), accès, carte Google Maps interactive.
  */
 export function LocationCard() {
   const root = useRef<HTMLDivElement>(null);
@@ -143,7 +142,15 @@ export function LocationCard() {
         </section>
       </div>
 
-      <MapConsent />
+      <div className="map">
+        <iframe
+          title={`Carte Google Maps : Doka Coffee Shop, ${address.full}`}
+          src={maps.embed}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      </div>
     </div>
   );
 }

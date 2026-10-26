@@ -7,6 +7,8 @@ import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { DokaLogo } from "@/components/brand/DokaLogo";
 import { formatPrice, productsBySlug } from "@/data/products";
+import { siteConfig } from "@/data/site-config";
+import { entranceDelay } from "@/lib/entrance";
 import type { TakeawayScene } from "./scene/takeaway-scene";
 import { HANDOFF_AT, HANDOFF_HERO, RELEASE_AT } from "./scene/timing";
 import videoMeta from "../../../../public/videos/hero-takeaway.json";
@@ -128,8 +130,7 @@ export function HeroExperience() {
   // --- Chargement différé de la scène (3D temps réel ou vidéo)
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const introDone = window.setTimeout(() => document.documentElement.classList.add("intro-seen"), 1400);
-    if (reduce) return () => window.clearTimeout(introDone);
+    if (reduce) return;
 
     let cancelled = false;
     let scene: TakeawayScene | null = null;
@@ -182,7 +183,6 @@ export function HeroExperience() {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(introDone);
       window.clearTimeout(handle);
       window.removeEventListener("load", schedule);
       document.removeEventListener("visibilitychange", onVis);
@@ -236,6 +236,16 @@ export function HeroExperience() {
     };
   }, [mode]);
 
+  // --- Les pastilles du haut se calent au-dessus du texte, quelle que soit la hauteur d'écran
+  useEffect(() => {
+    const sticky = root.current?.querySelector<HTMLElement>(".hero__sticky");
+    const copy = root.current?.querySelector<HTMLElement>(".hero__copy");
+    if (!sticky || !copy) return;
+    const ro = new ResizeObserver(() => sticky.style.setProperty("--hero-copy-h", `${copy.offsetHeight}px`));
+    ro.observe(copy);
+    return () => ro.disconnect();
+  }, []);
+
   // --- Pointeur → légère orbite de caméra + parallaxe du logo de fond
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
@@ -260,8 +270,7 @@ export function HeroExperience() {
       if (!el) return;
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const introPlaying = !document.documentElement.classList.contains("intro-seen");
-        const delay = introPlaying ? 0.85 : 0.15;
+        const delay = 0.15 + entranceDelay();
         const reveal = el.querySelectorAll<HTMLElement>("[data-reveal='hero']");
         const split = SplitText.create(el.querySelector(".hero__title"), {
           type: "words,chars",
@@ -280,7 +289,31 @@ export function HeroExperience() {
           .from(".hero__lead", { autoAlpha: 0, y: 18, duration: 0.7 }, 0.55)
           .from(".hero__ctas > *", { autoAlpha: 0, y: 18, stagger: 0.08, duration: 0.6 }, 0.65)
           .from(".hero__sticker", { autoAlpha: 0, scale: 0, rotate: -40, duration: 0.8, ease: "doka.pop" }, 0.85)
+          .from(
+            ".hero__badge",
+            {
+              autoAlpha: 0,
+              scale: 0,
+              rotate: (i: number) => (i % 2 ? 30 : -30),
+              duration: 0.8,
+              stagger: 0.09,
+              ease: "doka.pop",
+            },
+            0.5,
+          )
           .from(".hero__scroll", { autoAlpha: 0, y: -10, duration: 0.6 }, 1);
+
+        // Les pastilles flottent doucement, chacune à son rythme
+        const floats = gsap.utils.toArray<HTMLElement>(".hero__badge", el).map((b, i) =>
+          gsap.to(b, {
+            y: i % 2 ? 7 : -7,
+            duration: 2.4 + i * 0.35,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+            delay: delay + 1.4,
+          }),
+        );
 
         // Zoom « vidéo » : la vue avance vers le gobelet, puis se fond dans le gros plan
         const zoom = { v: 0 };
@@ -328,6 +361,7 @@ export function HeroExperience() {
           })
           .to(".hero__copy", { yPercent: -18, autoAlpha: 0, ease: "none", duration: 0.32 }, 0)
           .to(".hero__scroll, .hero__sticker", { autoAlpha: 0, ease: "none", duration: 0.12 }, 0)
+          .to(".hero__badges", { yPercent: -30, autoAlpha: 0, ease: "none", duration: 0.22 }, 0)
           .to(".hero__bglogo", { scale: 1.25, autoAlpha: 0, ease: "none", duration: 0.6 }, 0)
           .to(zoom, { v: 1, ease: "power2.inOut", duration: 0.75, onUpdate: applyVideoZoom }, 0.02)
           .fromTo(
@@ -348,6 +382,7 @@ export function HeroExperience() {
         };
         gsap.ticker.add(syncFlood);
         return () => {
+          floats.forEach((t) => t.kill());
           gsap.ticker.remove(syncFlood);
           st.scrollTrigger?.kill();
           st.kill();
@@ -363,7 +398,7 @@ export function HeroExperience() {
     { scope: root },
   );
 
-  const slogan = "made for every day";
+  const slogan = "fait pour tous les jours";
 
   return (
     <section ref={root} className="hero" aria-labelledby="hero-title">
@@ -431,14 +466,34 @@ export function HeroExperience() {
           </div>
         </div>
 
+        <ul className="hero__badges" aria-label="En bref">
+          <li className="hero__badge hero__badge--price" data-reveal="hero">
+            <strong>{formatPrice(espresso.price)}</strong> l&apos;espresso
+          </li>
+          <li className="hero__badge hero__badge--google" data-reveal="hero">
+            <a href={siteConfig.maps.place} target="_blank" rel="noopener noreferrer">
+              <span className="hero__stars" aria-hidden="true">
+                {"★".repeat(siteConfig.googleRating.stars)}
+              </span>
+              <strong>{siteConfig.googleRating.value}</strong> sur Google
+              <span className="sr-only"> : voir les avis (nouvel onglet)</span>
+            </a>
+          </li>
+          <li className="hero__badge hero__badge--iced" data-reveal="hero">
+            <strong>chaud</strong> ou glacé
+          </li>
+          <li className="hero__badge hero__badge--oat" data-reveal="hero">
+            lait d&apos;avoine <strong>offert</strong>
+          </li>
+        </ul>
+
         <div className="hero__copy">
           <p className="hero__kicker brandline" data-reveal="hero">
-            doka — made for every day
+            doka — fait pour tous les jours
           </p>
           <h1 id="hero-title" className="hero__title display type-hero" data-reveal="hero">
-            your coffee.
-            <br />
-            on the go.
+            ton café.
+            <br />à emporter.
           </h1>
           <p className="hero__lead lead" data-reveal="hero">
             Café de spécialité 100 % à emporter, servi au guichet du 15 rue Rambuteau. L&apos;espresso est à{" "}

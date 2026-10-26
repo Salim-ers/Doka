@@ -73,7 +73,7 @@ export function AddressSection() {
           >
             Itinéraire
           </DokaButton>
-          <DokaButton href="/le-coffee-shop" variant="cream" size="lg">
+          <DokaButton href="/esprit-doka#le-lieu" variant="cream" size="lg">
             Découvrir le lieu
           </DokaButton>
           <DokaButton href={instagram.url} external variant="outline" size="lg" icon={<InstagramGlyph />}>

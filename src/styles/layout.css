@@ -320,6 +320,7 @@
 /* ==========================================================================
    Transition de page
    ========================================================================== */
+/* Pas de transform ici : GSAP pilote la position (un translate CSS s'ajouterait au sien). */
 .page-curtain {
   position: fixed;
   inset: 0;
@@ -329,17 +330,38 @@
   display: grid;
   place-items: center;
   visibility: hidden;
-  transform: translateY(100%);
   pointer-events: none;
-  border-radius: 0;
+  will-change: clip-path, transform;
+}
+.page-curtain__inner {
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.8rem, 2vh, 1.3rem);
+  width: min(52vw, 440px);
 }
 .page-curtain__logo {
-  width: min(46vw, 420px);
-  opacity: 0;
+  width: 100%;
 }
 .page-curtain__logo svg {
+  display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
+  /* les lettres montent depuis la ligne de base */
+  clip-path: inset(-40% -10% 0 -10%);
+}
+.page-curtain__logo [data-letter] {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.page-curtain__label {
+  min-height: 1.2em;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  letter-spacing: -0.02em;
+  visibility: hidden;
 }
 
 /* ==========================================================================
@@ -428,8 +450,14 @@
 .footer-link:focus-visible {
   background-size: 100% 2px;
 }
+/* Instagram puis, en dessous et bien séparé, le bouton « Retour en haut » */
+.footer-follow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .footer-top-btn {
-  margin-top: 1.4rem;
+  margin-top: 2rem;
   display: inline-flex;
   align-items: center;
   gap: 8px;

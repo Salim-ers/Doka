@@ -4,11 +4,11 @@ import { trackErrors } from "./helpers";
 test.describe("Mouvement réduit et accessibilité", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("14. Mouvement réduit : contenu immédiat, pas d'intro, pas de 3D", async ({ page }) => {
+  test("14. Mouvement réduit : contenu immédiat, pas d'écran de chargement, pas de 3D", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/");
-    await expect(page.locator(".intro")).toBeHidden();
-    await expect(page.getByRole("heading", { level: 1, name: /your coffee/i })).toBeVisible();
+    await expect(page.locator(".loader")).toBeHidden();
+    await expect(page.getByRole("heading", { level: 1, name: /ton café/i })).toBeVisible();
     await expect(page.locator(".hero__stage")).toHaveAttribute("data-mode", "poster");
     await expect(page.locator(".hero__poster img")).toBeVisible();
     // les sections narratives restent lisibles sans scroll piloté
@@ -32,23 +32,14 @@ test.describe("Mouvement réduit et accessibilité", () => {
     await expect(page.getByRole("link", { name: "Aller au contenu" })).toBeFocused();
     await page.getByRole("tab", { name: "Tout" }).focus();
     await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("tab", { name: "Classiques" })).toBeFocused();
-    await expect(page.getByRole("tab", { name: "Classiques" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Cafés" })).toBeFocused();
+    await expect(page.getByRole("tab", { name: "Cafés" })).toHaveAttribute("aria-selected", "true");
     await page.keyboard.press("End");
     await expect(page.getByRole("tab", { name: "Options" })).toHaveAttribute("aria-selected", "true");
   });
 
   test("Titres : un seul h1 par page", async ({ page }) => {
-    for (const p of [
-      "/",
-      "/la-carte",
-      "/nos-favoris",
-      "/produits",
-      "/produits/latte",
-      "/esprit-doka",
-      "/le-coffee-shop",
-      "/nous-trouver",
-    ]) {
+    for (const p of ["/", "/la-carte", "/nos-favoris", "/produits/latte", "/esprit-doka", "/nous-trouver"]) {
       await page.goto(p);
       await expect(page.locator("h1"), p).toHaveCount(1);
     }

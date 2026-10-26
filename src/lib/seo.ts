@@ -8,7 +8,7 @@ export function pageMetadata(opts: {
   path: string;
   image?: { url: string; alt: string };
 }): Metadata {
-  const image = opts.image ?? { url: "/images/doka/doka-identite-logo.webp", alt: "doka — made for every day" };
+  const image = opts.image ?? { url: "/images/doka/doka-identite-logo.webp", alt: "Logo doka sur fond orange" };
   return {
     title: opts.title,
     description: opts.description,
@@ -24,13 +24,13 @@ export function pageMetadata(opts: {
 
 /** Données structurées CafeOrCoffeeShop : uniquement des informations vérifiées (pas de note ni d'avis). */
 export function localBusinessJsonLd() {
-  const { address, hours, instagram, url, name } = siteConfig;
+  const { address, hours, instagram, url, name, tagline } = siteConfig;
   const json: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "CafeOrCoffeeShop",
     name,
     url,
-    slogan: "Made for every day",
+    slogan: tagline,
     image: `${url}/images/doka/doka-facade-rue-rambuteau.webp`,
     logo: `${url}/images/doka/doka-identite-logo.webp`,
     priceRange: `${formatPrice(priceRange().min)} – ${formatPrice(priceRange().max)}`,
@@ -46,7 +46,7 @@ export function localBusinessJsonLd() {
     hasMenu: `${url}/la-carte`,
     hasMenuSection: {
       "@type": "MenuSection",
-      name: "Classics & specials",
+      name: "La carte",
       hasMenuItem: products
         .filter((p) => p.price !== null)
         .map((p) => ({

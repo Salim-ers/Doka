@@ -1,7 +1,7 @@
 /**
  * Manifeste des médias Doka.
  * Règle : une photo = un emplacement éditorial. Les seules réutilisations sont
- * les photos produit, affichées en miniature dans le catalogue (/produits) puis
+ * les photos produit, affichées en vignette sur la carte (/la-carte) puis
  * en vue détaillée sur la fiche du produit concerné.
  *
  * Sources : visuels fournis par le client (fichiers « Image ChatGPT … »), 1672 × 941 px.
@@ -17,7 +17,20 @@ export type MediaId =
   | "carteOfficielle"
   | "espresso"
   | "devantureSoir"
-  | "latteGlace";
+  | "latteGlace"
+  | StockId;
+
+/** Photos d'illustration libres de droits, une par produit sans visuel Doka. */
+type StockId =
+  | "allonge"
+  | "double"
+  | "americano"
+  | "cappuccino"
+  | "flatWhite"
+  | "nuageCocoMatcha"
+  | "chaiLatte"
+  | "chocolatChaud"
+  | "the";
 
 export type MediaItem = {
   id: MediaId;
@@ -40,6 +53,169 @@ export type MediaItem = {
    */
   fit?: "contain";
   matte?: string;
+  /** Vignette carrée (carte, favoris) : point focal et zoom pour cadrer la boisson, pas le texte. */
+  thumb?: { focus: string; zoom: number };
+  /** Photo d'illustration libre de droits (banque d'images), pas une photo de Doka. */
+  credit?: { title: string; author: string; license: string; source: string };
+};
+
+/** Photo d'illustration libre de droits (CC0 ou domaine public) pour un produit sans visuel Doka. */
+function stock(
+  id: StockId,
+  slug: string,
+  o: {
+    subject: string;
+    alt: string;
+    width: number;
+    height: number;
+    focus: string;
+    thumb?: MediaItem["thumb"];
+    credit: NonNullable<MediaItem["credit"]>;
+  },
+): MediaItem {
+  return {
+    id,
+    file: `/images/doka/produits/${slug}.webp`,
+    original: `media/originals/stock/${slug}.jpg`,
+    description: `Photo d'illustration libre de droits : ${o.subject.toLowerCase()}.`,
+    subject: `Produit — ${o.subject} (illustration)`,
+    format: `${o.width} × ${o.height}`,
+    width: o.width,
+    height: o.height,
+    placements: ["/la-carte (vignette)", `/produits/${slug} (détail)`],
+    alt: o.alt,
+    usage: `Produit : ${o.subject} uniquement. Photo d'illustration, à remplacer par une photo Doka.`,
+    sourceQuality: `${o.credit.license} — ${o.credit.source}`,
+    focus: o.focus,
+    thumb: o.thumb,
+    credit: o.credit,
+  };
+}
+
+const CC0 = "CC0 1.0 (domaine public)";
+
+/** Sélection : Wikimedia Commons et WordPress Photo Directory, licence CC0 uniquement (oct. 2026). */
+const STOCK_PHOTOS: Record<StockId, MediaItem> = {
+  allonge: stock("allonge", "allonge", {
+    subject: "Allongé",
+    alt: "Un café allongé à la crème dorée dans une tasse en verre à anse métallique, sur une table en bois",
+    width: 1672,
+    height: 1115,
+    focus: "62% 50%",
+    credit: {
+      title: "Espresso lungo coffee in a cup made of glass and steel",
+      author: "Nilo Velez",
+      license: CC0,
+      source: "https://wordpress.org/photos/photo/16065c3b54/",
+    },
+  }),
+  double: stock("double", "double", {
+    subject: "Double",
+    alt: "Un double espresso et sa fine crème dans un petit verre, sur un comptoir en bois",
+    width: 1672,
+    height: 1115,
+    focus: "50% 50%",
+    credit: {
+      title: "Glass cup of beverage",
+      author: "Edan Cohen",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Glass_cup_of_beverage_(Unsplash).jpg",
+    },
+  }),
+  americano: stock("americano", "americano", {
+    subject: "Americano",
+    alt: "Un americano dans une grande tasse en verre sur sa soucoupe, posé sur une table en bois",
+    width: 1335,
+    height: 1672,
+    focus: "50% 62%",
+    thumb: { focus: "50% 75%", zoom: 1 },
+    credit: {
+      title: "A glass cup filled with dark coffee",
+      author: "Yam B Chhetri",
+      license: CC0,
+      source: "https://wordpress.org/photos/photo/50169d3322/",
+    },
+  }),
+  cappuccino: stock("cappuccino", "cappuccino", {
+    subject: "Cappuccino",
+    alt: "Un cappuccino mousseux orné d'une feuille dessinée dans la mousse, dans une tasse blanche",
+    width: 1672,
+    height: 941,
+    focus: "20% 50%",
+    credit: {
+      title: "Latte art on cappuccino",
+      author: "Drew Coffman",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Latte_art_on_cappuccino_(Unsplash).jpg",
+    },
+  }),
+  flatWhite: stock("flatWhite", "flat-white", {
+    subject: "Flat white",
+    alt: "Un flat white à la mousse de lait soyeuse dessinant une tulipe, vu de dessus dans une tasse blanche",
+    width: 1672,
+    height: 1115,
+    focus: "40% 50%",
+    credit: {
+      title: "Two Hands Cafe latte art",
+      author: "Drew Coffman",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Two_Hands_Cafe_latte_art_(Unsplash).jpg",
+    },
+  }),
+  nuageCocoMatcha: stock("nuageCocoMatcha", "nuage-coco-matcha", {
+    subject: "Nuage coco-matcha",
+    alt: "Un matcha au lait glacé dans un grand verre avec une paille, posé sur une table en bois",
+    width: 1115,
+    height: 1672,
+    focus: "50% 62%",
+    thumb: { focus: "50% 75%", zoom: 1 },
+    credit: {
+      title: "Iced green tea latte",
+      author: "Saya1611",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Iced_green_tea_latte.jpg",
+    },
+  }),
+  chaiLatte: stock("chaiLatte", "chai-latte", {
+    subject: "Chaï latte",
+    alt: "Un chaï latte saupoudré d'épices avec un cœur dessiné dans la mousse, dans une tasse anthracite",
+    width: 1672,
+    height: 1259,
+    focus: "40% 50%",
+    credit: {
+      title: "Chai Latte - The Flour Pot Bakery",
+      author: "Andy Li",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Chai_Latte_-_The_Flour_Pot_Bakery_2026-05-20.jpg",
+    },
+  }),
+  chocolatChaud: stock("chocolatChaud", "chocolat-chaud", {
+    subject: "Chocolat chaud",
+    alt: "Un chocolat chaud onctueux et mousseux dans une tasse blanche, sur une table en bois",
+    width: 1672,
+    height: 1326,
+    focus: "45% 50%",
+    credit: {
+      title: "Chocolat chaud au Café Lumière (Lyon)",
+      author: "Benoît Prieur",
+      license: CC0,
+      source:
+        "https://commons.wikimedia.org/wiki/File:Chocolat_chaud_au_Caf%C3%A9_Lumi%C3%A8re_(Lyon)_en_d%C3%A9cembre_2023.JPG",
+    },
+  }),
+  the: stock("the", "the", {
+    subject: "Thé",
+    alt: "Une tasse en verre de thé noir fumant avec son sachet, baignée de lumière sur un plan de travail",
+    width: 1672,
+    height: 1115,
+    focus: "25% 50%",
+    credit: {
+      title: "Tea on the countertop",
+      author: "freestocks.org",
+      license: CC0,
+      source: "https://commons.wikimedia.org/wiki/File:Tea_on_the_countertop_(34419804081).jpg",
+    },
+  }),
 };
 
 const W = 1672;
@@ -56,7 +232,7 @@ export const media: Record<MediaId, MediaItem> = {
     format: "16:9",
     width: W,
     height: H,
-    placements: ["Accueil — Le coin gourmand", "/produits (miniature)", "/produits/cookies (détail)"],
+    placements: ["Accueil — Le coin gourmand", "/la-carte (vignette)", "/produits/cookies (détail)"],
     alt: "Cookies Doka sur le présentoir à pois rouges, une main en saisit un avec une pince",
     usage: "Produit : cookies (parfums et prix non communiqués)",
     sourceQuality: SOURCE,
@@ -71,7 +247,7 @@ export const media: Record<MediaId, MediaItem> = {
     format: "16:9",
     width: W,
     height: H,
-    placements: ["/le-coffee-shop — Un café, ça se passe de main en main"],
+    placements: ["/esprit-doka — Le lieu : un café, ça se passe de main en main"],
     alt: "Un gobelet Doka tendu d'une main à une autre dans une rue de Paris",
     usage: "Ambiance, vente à emporter. Ne pas associer à une boisson précise.",
     sourceQuality: SOURCE + " Logo et enseigne en bleu marine sur ce visuel : à valider avec la marque.",
@@ -79,20 +255,22 @@ export const media: Record<MediaId, MediaItem> = {
   },
   matcha: {
     id: "matcha",
-    file: "/images/doka/doka-matcha-glace.webp",
+    file: "/images/doka/doka-matcha-glace-recadre.webp",
     original: "media/originals/doka-matcha-glace.png",
-    description: "Visuel officiel « doka matcha — your favorite drink » : matcha latte glacé, logo noir en pied.",
-    subject: "Produit — Matcha Latte (version glacée)",
-    format: "16:9",
+    description:
+      "Visuel officiel doka matcha, recadré sous son titre anglais « your favorite drink » (site en français) : matcha latte glacé, logo noir en pied.",
+    subject: "Produit — Matcha latte (version glacée)",
+    format: "1672 × 719",
     width: W,
-    height: H,
-    placements: ["Accueil — Section matcha", "/produits (miniature)", "/produits/matcha-latte (détail)"],
+    height: 719,
+    placements: ["Accueil — Section matcha", "/la-carte (vignette)", "/produits/matcha-latte (détail)"],
     alt: "Matcha latte glacé Doka dans un gobelet transparent, logo doka en noir",
-    usage: "Produit : Matcha Latte uniquement",
-    sourceQuality: SOURCE + " Visuel de campagne avec texte intégré : cadrage centré obligatoire.",
+    usage: "Produit : Matcha latte uniquement",
+    sourceQuality: SOURCE + " Recadrage généré par scripts/optimize-images.mjs (bandeau de texte retiré).",
     focus: "50% 50%",
     fit: "contain",
     matte: "#FEFDF2",
+    thumb: { focus: "50% 30%", zoom: 1.35 },
   },
   identite: {
     id: "identite",
@@ -104,7 +282,7 @@ export const media: Record<MediaId, MediaItem> = {
     width: W,
     height: H,
     placements: ["/esprit-doka — Le manifeste"],
-    alt: "Logo doka crème sur fond orange avec la signature made for every day",
+    alt: "Logo doka crème sur fond orange avec sa signature",
     usage: "Identité. Source du tracé vectoriel du logo (src/components/brand/logo-paths.ts).",
     sourceQuality: SOURCE,
     focus: "50% 50%",
@@ -134,7 +312,7 @@ export const media: Record<MediaId, MediaItem> = {
     width: W,
     height: H,
     placements: ["/esprit-doka — Une carte qui tient sur un tableau"],
-    alt: "La carte officielle de Doka avec les prix, de l'espresso à 1,50 € au Coconut Matcha Cloud à 5,50 €",
+    alt: "La carte officielle de Doka avec les prix, de l'espresso à 1,50 € à la boisson signature coco-matcha à 5,50 €",
     usage: "Source des données de src/data/products.ts",
     sourceQuality: SOURCE,
     focus: "40% 50%",
@@ -148,7 +326,7 @@ export const media: Record<MediaId, MediaItem> = {
     format: "16:9",
     width: W,
     height: H,
-    placements: ["Accueil — Coffee moment", "/produits (miniature)", "/produits/espresso (détail)"],
+    placements: ["Accueil — L'heure du café", "/la-carte (vignette)", "/produits/espresso (détail)"],
     alt: "Un espresso coule de la machine dans un gobelet doka",
     usage: "Produit : Espresso",
     sourceQuality: SOURCE,
@@ -163,7 +341,7 @@ export const media: Record<MediaId, MediaItem> = {
     format: "16:9",
     width: W,
     height: H,
-    placements: ["/le-coffee-shop — Ouverture"],
+    placements: ["/esprit-doka — Le lieu (devanture qui s'agrandit)"],
     alt: "Un gobelet doka tenu à la main devant la devanture rouge du coffee shop, le soir",
     usage: "Lieu",
     sourceQuality: SOURCE + " Le tableau de prix visible sur la vitrine diffère de la carte officielle : à vérifier.",
@@ -178,12 +356,14 @@ export const media: Record<MediaId, MediaItem> = {
     format: "16:9",
     width: W,
     height: H,
-    placements: ["Accueil — Les incontournables (Latte)", "/produits (miniature)", "/produits/latte (détail)"],
+    placements: ["Accueil — Les incontournables (Latte)", "/la-carte (vignette)", "/produits/latte (détail)"],
     alt: "Latte glacé Doka, marbrures de café et de lait dans un gobelet transparent",
     usage: "Produit : Latte, version glacée (option gratuite)",
     sourceQuality: SOURCE,
     focus: "50% 40%",
     fit: "contain",
     matte: "#FFFFFF",
+    thumb: { focus: "50% 22%", zoom: 1.4 },
   },
+  ...STOCK_PHOTOS,
 };

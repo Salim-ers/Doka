@@ -134,7 +134,7 @@ export function FullscreenMenu({ open, onClose, pathname }: Props) {
         </ul>
       </nav>
       <div className="fs-menu__meta">
-        <p className="brandline">made for every day</p>
+        <p className="brandline">{siteConfig.tagline.toLowerCase()}</p>
         <p>
           {siteConfig.address.full}
           <br />

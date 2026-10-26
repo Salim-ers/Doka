@@ -23,7 +23,7 @@ export const DLink = forwardRef<HTMLAnchorElement, Props>(function DLink({ href,
         if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         if (rest.target && rest.target !== "_self") return;
         e.preventDefault();
-        navigate(href);
+        navigate(href, { x: e.clientX, y: e.clientY });
       }}
     />
   );
