@@ -33,7 +33,7 @@ export function CoinGourmand() {
           autoAlpha: 0,
           stagger: 0.1,
           duration: 0.8,
-          scrollTrigger: { trigger: ".cg-copy", start: "top 80%", once: true },
+          scrollTrigger: { trigger: ".cg-copy", start: "top 92%", once: true },
         });
       });
       return () => mm.revert();

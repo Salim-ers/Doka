@@ -44,7 +44,7 @@ export function AddressSection() {
           autoAlpha: 0,
           duration: 1.2,
           ease: "doka.pop",
-          scrollTrigger: { trigger: ".ad-title", start: "top 85%", once: true },
+          scrollTrigger: { trigger: ".ad-title", start: "top 92%", once: true },
         });
       });
       return () => mm.revert();

@@ -68,13 +68,13 @@ export function RevealImage({
               clipPath: to,
               duration: 1.3,
               ease: "doka.inOut",
-              scrollTrigger: { trigger: el, start: "top 85%", once: true },
+              scrollTrigger: { trigger: el, start: "top 92%", once: true },
             },
           );
           gsap.fromTo(
             img,
             { scale: 1.25 },
-            { scale: 1, duration: 1.6, ease: "doka.out", scrollTrigger: { trigger: el, start: "top 85%", once: true } },
+            { scale: 1, duration: 1.6, ease: "doka.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } },
           );
         }
         if (parallax > 0) {

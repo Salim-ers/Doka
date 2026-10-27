@@ -116,6 +116,23 @@ test.describe("Parcours principal", () => {
     expect(errors).toEqual([]);
   });
 
+  test("Précédent pendant une transition : la nappe se lève, aucune navigation forcée", async ({ page }) => {
+    const errors = trackErrors(page);
+    const nav = page.getByRole("navigation", { name: "Navigation principale" });
+    await page.goto("/nous-trouver");
+    await nav.getByRole("link", { name: "La carte" }).click();
+    await expect(page).toHaveURL(/\/la-carte$/);
+    await expectCurtainHidden(page);
+    await nav.getByRole("link", { name: "Nos favoris" }).click();
+    await page.waitForTimeout(250);
+    await page.goBack();
+    await expectCurtainHidden(page);
+    await page.waitForTimeout(1500);
+    await expect(page).toHaveURL(/\/nous-trouver$/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test("13. Navigation rapide entre les pages, précédent / suivant", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/la-carte");

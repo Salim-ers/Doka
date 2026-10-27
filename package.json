@@ -12,7 +12,8 @@
     "images": "node scripts/optimize-images.mjs",
     "poster": "node scripts/render-hero-poster.mjs",
     "test:e2e": "playwright test",
-    "video": "node scripts/render-hero-video.mjs"
+    "video": "node scripts/render-hero-video.mjs",
+    "og": "node scripts/render-og.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

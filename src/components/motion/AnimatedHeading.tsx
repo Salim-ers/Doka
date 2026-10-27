@@ -33,7 +33,7 @@ export function AnimatedHeading({
   mode = "lines",
   immediate = false,
   delay = 0,
-  start = "top 82%",
+  start = "top 92%",
 }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
 

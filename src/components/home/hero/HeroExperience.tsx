@@ -73,10 +73,19 @@ function coverPoint(box: { width: number; height: number }, mediaW: number, medi
   return { x: (box.width - w) / 2 + nx * w, y: (box.height - h) / 2 + ny * h };
 }
 
+/**
+ * Images pré-rendues de la scène, servies avec un cache « immuable » d'un an : la version
+ * dans l'adresse change à chaque nouveau rendu (`npm run poster` / `npm run video`).
+ */
+const RENDER_V = "?v=2";
+const POSTER = `/images/doka/hero-scene.webp${RENDER_V}`;
+const POSTER_MOBILE = `/images/doka/hero-scene-mobile.webp${RENDER_V}`;
+const ZOOM_MOBILE = `/images/doka/hero-zoom-mobile.webp${RENDER_V}`;
+
 export function HeroExperience() {
   // Poster du hero préchargé selon le format (l'élément LCP de la page)
-  preload("/images/doka/hero-scene.webp", { as: "image", media: "(min-width: 820px)", fetchPriority: "high" });
-  preload("/images/doka/hero-scene-mobile.webp", { as: "image", media: "(max-width: 819px)", fetchPriority: "high" });
+  preload(POSTER, { as: "image", media: "(min-width: 820px)", fetchPriority: "high" });
+  preload(POSTER_MOBILE, { as: "image", media: "(max-width: 819px)", fetchPriority: "high" });
 
   const root = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -442,9 +451,9 @@ export function HeroExperience() {
         <div ref={stageRef} className="hero__stage" data-mode={mode}>
           <div ref={mediaRef} className="hero__media">
             <picture className="hero__poster">
-              <source media="(max-width: 819px)" srcSet="/images/doka/hero-scene-mobile.webp" type="image/webp" />
+              <source media="(max-width: 819px)" srcSet={POSTER_MOBILE} type="image/webp" />
               <img
-                src="/images/doka/hero-scene.webp"
+                src={POSTER}
                 alt="Illustration 3D : au guichet rouge de Doka, le barista tend un gobelet doka à un passant."
                 width={1600}
                 height={900}
@@ -462,7 +471,7 @@ export function HeroExperience() {
                   loop
                   playsInline
                   preload="auto"
-                  poster="/images/doka/hero-scene-mobile.webp"
+                  poster={POSTER_MOBILE}
                   aria-hidden="true"
                   tabIndex={-1}
                   disablePictureInPicture
@@ -479,7 +488,7 @@ export function HeroExperience() {
               <img
                 ref={zoomImgRef}
                 className="hero__zoom"
-                src="/images/doka/hero-zoom-mobile.webp"
+                src={ZOOM_MOBILE}
                 alt=""
                 aria-hidden="true"
                 decoding="async"

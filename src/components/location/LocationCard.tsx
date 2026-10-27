@@ -38,7 +38,7 @@ export function LocationCard() {
             clipPath: "circle(80% at 50% 50%)",
             duration: 1.4,
             ease: "doka.inOut",
-            scrollTrigger: { trigger: ".map", start: "top 85%", once: true },
+            scrollTrigger: { trigger: ".map", start: "top 92%", once: true },
           },
         );
       });

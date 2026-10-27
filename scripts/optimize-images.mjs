@@ -35,15 +35,16 @@ for (const file of files) {
 // Recadrages : versions sans le texte anglais incrusté dans certains visuels de campagne
 // (le site est entièrement en français). L'original et sa version complète restent intacts.
 const CROPS = [
-  // « doka matcha / YOUR FAVORITE DRINK » en tête : on garde le gobelet et le logo
-  { from: "doka-matcha-glace.png", to: "doka-matcha-glace-recadre", top: 222 },
+  // gros plan sur le gobelet : sans le titre anglais « your favorite drink » (en tête)
+  // ni le logo, coupé au bord bas dans le visuel d'origine
+  { from: "doka-matcha-glace.png", to: "doka-matcha-glace-gros-plan", left: 300, top: 222, width: 1072, height: 452 },
 ];
 for (const c of CROPS) {
   const input = sharp(path.join(SRC, c.from));
   const meta = await input.metadata();
   const base = input
     .clone()
-    .extract({ left: 0, top: c.top, width: meta.width, height: meta.height - c.top })
+    .extract({ left: c.left ?? 0, top: c.top, width: c.width ?? meta.width, height: c.height ?? meta.height - c.top })
     .sharpen({ sigma: 0.6, m1: 0.4, m2: 0.8 });
   await base
     .clone()
@@ -53,7 +54,7 @@ for (const c of CROPS) {
     .clone()
     .avif({ quality: 62, effort: 6 })
     .toFile(path.join(OUT, `${c.to}.avif`));
-  console.log(`${c.to}: ${meta.width}×${meta.height - c.top}`);
+  console.log(`${c.to}: ${c.width ?? meta.width}×${c.height ?? meta.height - c.top}`);
 }
 
 // Photos d'illustration libres de droits (media/originals/stock, une par produit sans

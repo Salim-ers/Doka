@@ -25,6 +25,7 @@ Node 20.9+ (développé et testé avec Node 22).
 | `npm run format`        | Prettier                                                                                 |
 | `npm run images`        | Regénère les images web (`public/images/doka`) depuis `media/originals`                  |
 | `npm run poster`        | Regénère les posters du hero depuis la vraie scène 3D (serveur de dev lancé)             |
+| `npm run og`            | Regénère l'image de partage en français (`public/images/doka/doka-og.jpg`)                |
 | `npm run video`         | Regénère la vidéo mobile du hero depuis la vraie scène 3D (serveur de dev lancé, ffmpeg) |
 | `npm run test:e2e`      | Tests de parcours Playwright (build requis)                                              |
 
@@ -71,6 +72,7 @@ src/
     menu/                 MenuBoard (carte filtrable, photo par produit), MenuCategoryTabs
     products/             ProductCard, ProductVisual, ProductDetail
     favorites/            sélection éditoriale, favoris du visiteur
+    esprit/               EspritStory, IdentityCard (identité en français), BoardCard (le tableau de la carte)
     gallery/              ImageGallery (le lieu, dans L'esprit Doka), Lightbox
     location/             LocationCard (avec la carte Google Maps), OpenStatus, Faq
     motion/               AnimatedHeading, RevealImage, CoffeeFlow

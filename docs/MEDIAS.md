@@ -12,7 +12,7 @@ Source de vérité technique : `src/data/media.ts` (ce document en est la versio
 | --- | --- | --- | --- | --- | --- |
 | `doka-cookies-presentoir` | Cookies sur le présentoir à pois rouges | Accueil — Le coin gourmand · `/la-carte` (vignette) · `/produits/cookies` | Cookies Doka sur le présentoir à pois rouges, une main en saisit un avec une pince | Produit : cookies | Parfums et prix non communiqués |
 | `doka-gobelet-rue` | Gobelet passé d'une main à l'autre, rue parisienne | `/esprit-doka` — Le lieu : « Un café, ça se passe de main en main » | Un gobelet Doka tendu d'une main à une autre dans une rue de Paris | Ambiance, à emporter | Logo et enseigne bleu marine sur ce visuel : à valider |
-| `doka-matcha-glace` | Visuel officiel « doka matcha — your favorite drink » | Accueil — Section matcha · `/la-carte` (vignette) · `/produits/matcha-latte` | Matcha latte glacé Doka dans un gobelet transparent, logo doka en noir | Produit : Matcha latte uniquement | Affiché en version **recadrée** (`doka-matcha-glace-recadre`) sans son titre anglais « your favorite drink » : site entièrement en français |
+| `doka-matcha-glace` | Visuel officiel « doka matcha — your favorite drink » | Accueil — Section matcha · `/la-carte` (vignette) · `/produits/matcha-latte` | Matcha latte glacé Doka dans un gobelet transparent, logo doka en noir | Produit : Matcha latte uniquement | Affiché en **gros plan** (`doka-matcha-glace-gros-plan`) : sans son titre anglais « your favorite drink » ni le logo, coupé au bord bas dans l'original |
 | `doka-identite-logo` | Logo crème sur orange + signature | `/esprit-doka` — Identité | Logo doka crème sur fond orange avec la signature made for every day | Identité | Source du tracé vectoriel du logo |
 | `doka-facade-rue-rambuteau` | Façade complète, devanture rouge | Accueil — L'adresse | La devanture rouge de Doka rue Rambuteau, avec son enseigne crème et son guichet | Lieu ; référence de la scène 3D | Prix du panneau de façade ≠ carte officielle ; n° 11 sur la porte voisine |
 | `doka-carte-officielle` | La carte officielle | `/esprit-doka` — « Une carte qui tient sur un tableau » | La carte officielle de Doka avec les prix… | Source de `products.ts` | Visuel de campagne : jamais recadré |
@@ -50,4 +50,13 @@ Licence **CC0 1.0** uniquement (domaine public : usage commercial libre, sans at
 
 | Fichier | Depuis | Pourquoi |
 | --- | --- | --- |
-| `doka-matcha-glace-recadre` | `doka-matcha-glace.png` (bande haute de 222 px retirée) | Retirer le titre anglais « your favorite drink » : le site est entièrement en français |
+| `doka-matcha-glace-gros-plan` | `doka-matcha-glace.png` (zone 1072 × 452 à partir de x 300, y 222) | Gros plan sur le gobelet, sans le titre anglais « your favorite drink » ni le logo coupé : le site est entièrement en français |
+
+## Visuels remplacés par des versions françaises
+
+| Ancien visuel | Remplacé par | Pourquoi |
+| --- | --- | --- |
+| `doka-identite-logo` (logo et signatures « made for every day… ») | `IdentityCard` sur `/esprit-doka` (logo vectoriel officiel, signatures en français) et `doka-og.jpg` pour les partages (`npm run og`) | Textes anglais incrustés |
+| `doka-carte-officielle` (photo du tableau : « classics », « specials », « free options »…) | `BoardCard` sur `/esprit-doka` : le tableau recomposé en français depuis `products.ts`, donc toujours à jour | Rubriques en anglais |
+
+Les fichiers d'origine restent dans le dépôt (`identite` sert encore de logo dans les données structurées).

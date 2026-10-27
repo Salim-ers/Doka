@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { bringYourOwnCup, drinkOptions, formatPrice, productsBySlug } from "@/data/products";
-import { RevealImage } from "@/components/motion/RevealImage";
+import { IdentityCard } from "./IdentityCard";
+import { BoardCard } from "./BoardCard";
 import { CoffeeFlow } from "@/components/motion/CoffeeFlow";
 import { AnimatedHeading } from "@/components/motion/AnimatedHeading";
 import { DokaButton } from "@/components/ui/DokaButton";
@@ -118,6 +119,36 @@ export function EspritStory() {
             },
           );
         }
+        gsap
+          .timeline({ scrollTrigger: { trigger: ".es-idcard", start: "top 92%", once: true } })
+          .fromTo(
+            ".es-idcard",
+            { clipPath: "circle(8% at 50% 50%)" },
+            { clipPath: "circle(75% at 50% 50%)", duration: 1.3, ease: "doka.inOut" },
+          )
+          .fromTo(
+            ".es-idcard__logo [data-letter]",
+            { yPercent: 110 },
+            { yPercent: 0, duration: 0.8, stagger: 0.07, ease: "doka.pop" },
+            0.35,
+          )
+          .fromTo(
+            ".es-idcard__sign, .es-idcard__lines",
+            { autoAlpha: 0, y: 16 },
+            { autoAlpha: 1, y: 0, stagger: 0.1 },
+            0.7,
+          );
+        gsap.fromTo(
+          ".es-tableau",
+          { y: 60, autoAlpha: 0 },
+          {
+            y: 0,
+            autoAlpha: 1,
+            duration: 1.1,
+            ease: "doka.out",
+            scrollTrigger: { trigger: ".es-tableau", start: "top 92%", once: true },
+          },
+        );
         gsap.fromTo(
           ".es-stamp",
           { rotate: -30, scale: 0.4, autoAlpha: 0 },
@@ -185,13 +216,7 @@ export function EspritStory() {
             en une seconde, comme on attrape un café en passant.
           </p>
         </div>
-        <RevealImage
-          id="identite"
-          reveal="circle"
-          className="es-id__img"
-          sizes="(max-width: 900px) 92vw, 60vw"
-          parallax={0}
-        />
+        <IdentityCard className="es-id__img" />
       </section>
 
       {/* La carte comme preuve */}
@@ -216,14 +241,7 @@ export function EspritStory() {
             </DokaButton>
           </div>
         </div>
-        <RevealImage
-          id="carteOfficielle"
-          reveal="rise"
-          fit="contain"
-          className="es-board__img"
-          sizes="(max-width: 900px) 92vw, 58vw"
-          parallax={0}
-        />
+        <BoardCard className="es-board__img" />
       </section>
     </div>
   );

@@ -735,12 +735,125 @@ body:has(.site-header[data-hidden]) .mb-tabs {
   gap: 1.2rem;
   align-content: start;
 }
-.es-id__img {
-  aspect-ratio: 16 / 9;
+/* Identité : logo officiel crème sur orange et signatures en français (IdentityCard) */
+.es-idcard {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(0.6rem, 1.6vw, 1.2rem);
+  min-height: clamp(260px, 32vw, 520px);
+  margin: 0;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border-radius: var(--r-blob);
+  background: var(--orange);
+  color: var(--cream);
+  text-align: center;
 }
-.es-board__img {
-  aspect-ratio: 16 / 9;
-  background: #fefde3;
+.es-idcard__logo {
+  width: min(68%, 520px);
+}
+.es-idcard__logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  /* les lettres montent depuis la ligne de base */
+  clip-path: inset(-40% -10% 0 -10%);
+}
+.es-idcard__logo [data-letter] {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.es-idcard__sign {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2.8rem);
+}
+.es-idcard__lines {
+  display: grid;
+  gap: 0.25rem;
+  font-weight: 650;
+  font-size: clamp(0.78rem, 1.05vw, 1.02rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+/* Le tableau de la carte, en français (BoardCard) */
+.es-tableau {
+  margin: 0;
+  padding: clamp(1.2rem, 3vw, 2.4rem);
+  border-radius: 1.4rem;
+  background: #fff;
+  color: var(--ink);
+  font-size: clamp(0.85rem, 0.95vw, 1rem);
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 30px 60px -40px rgb(23 23 20 / 0.5);
+}
+.es-tableau__cols {
+  display: grid;
+  gap: 1.2rem clamp(1.5rem, 3vw, 3rem);
+}
+@media (min-width: 640px) {
+  .es-tableau__cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.es-tableau__h {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  letter-spacing: -0.04em;
+}
+.es-tableau section > .es-tableau__h:not(:first-child) {
+  margin-top: 1.1rem;
+}
+.es-tableau ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.es-tableau li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-weight: 560;
+}
+.es-tableau__dots {
+  flex: 1;
+  min-width: 0.8rem;
+  border-bottom: 2px dotted rgb(23 23 20 / 0.28);
+  translate: 0 -0.25em;
+}
+.es-tableau li .price {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.es-tableau__byoc {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15em;
+}
+.es-tableau__byoc .price {
+  color: var(--orange-text);
+}
+.es-tableau__foot {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-top: 1.3rem;
+  font-size: 0.8em;
+  color: var(--ink-3);
+}
+.es-tableau__logo {
+  width: 74px;
+  color: var(--ink);
+}
+.es-tableau__logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .es-stamp {
   justify-self: start;

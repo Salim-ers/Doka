@@ -27,6 +27,9 @@ export function AnimatedPrice({ cents, className, countUp = true, trigger }: Pro
       if (!countUp || cents === null || !ref.current) return;
       const el = ref.current.querySelector<HTMLElement>("[data-value]");
       if (!el) return;
+      // le déclencheur est un ancêtre (ex. la fiche) : on le cherche au-dessus de l'élément,
+      // pas dans la portée du composant
+      const triggerEl = (trigger && ref.current.closest(trigger)) || ref.current;
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const obj = { v: 0 };
@@ -34,7 +37,7 @@ export function AnimatedPrice({ cents, className, countUp = true, trigger }: Pro
           v: cents,
           duration: 1.1,
           ease: "power3.out",
-          scrollTrigger: { trigger: trigger ?? ref.current, start: "top 85%", once: true },
+          scrollTrigger: { trigger: triggerEl, start: "top 92%", once: true },
           onUpdate: () => {
             el.textContent = formatPrice(Math.round(obj.v / 10) * 10, { currency: false });
           },

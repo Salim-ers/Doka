@@ -38,7 +38,7 @@ export function CoffeeMoment() {
           autoAlpha: 0,
           stagger: 0.14,
           duration: 0.9,
-          scrollTrigger: { trigger: ".cm-lines", start: "top 85%", once: true },
+          scrollTrigger: { trigger: ".cm-lines", start: "top 92%", once: true },
         });
       });
       return () => mm.revert();

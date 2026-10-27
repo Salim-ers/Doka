@@ -62,6 +62,11 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   const startedAt = useRef(0);
   const failsafe = useRef(0);
   const waiting = useRef(0);
+  const safety = useRef(0);
+  const grace = useRef(0);
+  const arriveTimer = useRef(0);
+  const revealing = useRef(false);
+  const fromPath = useRef("");
   const anims = useRef<Animation[]>([]);
 
   const play = (el: Element | null, frames: Keyframe[], options: KeyframeAnimationOptions) => {
@@ -74,16 +79,28 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
 
   const finish = useCallback(() => {
     const el = curtain.current;
+    window.clearTimeout(failsafe.current);
+    window.clearTimeout(waiting.current);
+    window.clearTimeout(safety.current);
+    window.clearTimeout(grace.current);
     anims.current.forEach((a) => a.cancel());
     anims.current = [];
+    label.current?.classList.remove("is-waiting");
     if (el) el.style.visibility = "hidden";
     busy.current = false;
+    pushed.current = false;
+    pending.current = null;
     setCurtainCovering(false);
   }, []);
 
   const reveal = useCallback(() => {
+    if (revealing.current) return;
+    revealing.current = true;
     window.clearTimeout(failsafe.current);
     window.clearTimeout(waiting.current);
+    window.clearTimeout(grace.current);
+    // filet : quoi qu'il arrive à l'animation, la nappe disparaît
+    safety.current = window.setTimeout(finish, 1400);
     label.current?.classList.remove("is-waiting");
     letters().forEach((l, i) =>
       play(
@@ -105,8 +122,27 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       [{ transform: "translateY(0)" }, { transform: `translateY(calc(-100% - ${LIP}))` }],
       { duration: 600, delay: 90, easing: EASE_IN_OUT },
     );
-    out?.finished.then(finish, () => {});
+    if (out) out.finished.then(finish, finish);
+    else finish();
   }, [finish]);
+
+  /** Arrivée sur la nouvelle page (sous la nappe) : défilement, recalcul, puis levée de la nappe. */
+  const arrive = useCallback(() => {
+    window.clearTimeout(failsafe.current);
+    window.clearTimeout(grace.current);
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    const anchor = hash ? document.getElementById(hash) : null;
+    if (anchor) anchor.scrollIntoView();
+    else window.scrollTo(0, 0);
+    window.clearTimeout(arriveTimer.current);
+    arriveTimer.current = window.setTimeout(
+      () => {
+        ScrollTrigger.refresh();
+        requestAnimationFrame(reveal);
+      },
+      Math.max(60, MIN_COVER - (performance.now() - startedAt.current)),
+    );
+  }, [reveal]);
 
   const navigate = useCallback(
     (href: string) => {
@@ -139,78 +175,112 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       }
       busy.current = true;
       pushed.current = false;
+      revealing.current = false;
       startedAt.current = performance.now();
+      fromPath.current = window.location.pathname;
       setCurtainCovering(true);
       nextTarget.current = target;
       pending.current = url.pathname;
       router.prefetch(target);
       if (label.current) label.current.textContent = labelFor(url.pathname);
 
-      anims.current.forEach((a) => a.cancel());
-      anims.current = [];
-      el.style.visibility = "visible";
-      const cover = play(
-        panel.current,
-        [{ transform: `translateY(calc(100% + ${LIP}))` }, { transform: "translateY(0)" }],
-        { duration: 520, easing: EASE_IN_OUT },
-      );
-      letters().forEach((l, i) =>
-        play(l, [{ transform: "translateY(115%)" }, { transform: "translateY(0)" }], {
-          duration: 440,
-          delay: 160 + i * 40,
-          easing: EASE_POP,
-        }),
-      );
-      play(
-        label.current,
-        [
-          { opacity: 0, transform: "translateY(10px)" },
-          { opacity: 1, transform: "none" },
-        ],
-        {
-          duration: 300,
-          delay: 320,
-          easing: EASE_OUT,
-        },
-      );
-      cover?.finished.then(
-        () => {
-          pushed.current = true;
-          router.push(nextTarget.current);
-          // la page tarde : le nom de la page respire doucement en attendant
-          waiting.current = window.setTimeout(() => label.current?.classList.add("is-waiting"), 900);
-          // filet de sécurité : si la page n'arrive pas, navigation classique
-          failsafe.current = window.setTimeout(() => window.location.assign(nextTarget.current), FAILSAFE);
-        },
-        () => {},
-      );
+      /** Lance la navigation une seule fois : à la fin de la montée de la nappe, ou au plus tard après 700 ms. */
+      const go = () => {
+        // (pas de navigation si elle a été abandonnée entre-temps, ex. bouton précédent)
+        if (pushed.current || !busy.current || !pending.current) return;
+        pushed.current = true;
+        router.push(nextTarget.current);
+        // la page tarde : le nom de la page respire doucement en attendant
+        waiting.current = window.setTimeout(() => label.current?.classList.add("is-waiting"), 900);
+        // filet de sécurité : si la page n'arrive pas du tout, navigation classique
+        failsafe.current = window.setTimeout(() => window.location.assign(nextTarget.current), FAILSAFE);
+      };
+
+      try {
+        anims.current.forEach((a) => a.cancel());
+        anims.current = [];
+        el.style.visibility = "visible";
+        const cover = play(
+          panel.current,
+          [{ transform: `translateY(calc(100% + ${LIP}))` }, { transform: "translateY(0)" }],
+          { duration: 520, easing: EASE_IN_OUT },
+        );
+        letters().forEach((l, i) =>
+          play(l, [{ transform: "translateY(115%)" }, { transform: "translateY(0)" }], {
+            duration: 440,
+            delay: 160 + i * 40,
+            easing: EASE_POP,
+          }),
+        );
+        play(
+          label.current,
+          [
+            { opacity: 0, transform: "translateY(10px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          {
+            duration: 300,
+            delay: 320,
+            easing: EASE_OUT,
+          },
+        );
+        if (cover) cover.finished.then(go, go);
+        window.setTimeout(go, 700);
+      } catch {
+        // animation impossible sur ce navigateur : navigation directe, rien ne reste bloqué
+        finish();
+        router.push(target);
+      }
     },
-    [router],
+    [router, finish],
   );
 
   // La nouvelle page est rendue : sous la nappe, on remet le défilement en place et on recalcule
   // les animations au scroll (le coûteux), puis on lève la nappe dès que le logo est posé.
+  // Si l'adresse change vers une autre page que prévu (redirection, bouton précédent pendant la
+  // transition…), on lève quand même la nappe : jamais de page bloquée sous l'orange.
   useEffect(() => {
-    if (!pending.current || pending.current !== pathname) return;
-    pending.current = null;
-    window.clearTimeout(failsafe.current);
-    const hash = decodeURIComponent(window.location.hash.slice(1));
-    const anchor = hash ? document.getElementById(hash) : null;
-    if (anchor) anchor.scrollIntoView();
-    else window.scrollTo(0, 0);
-    let raf = 0;
-    const id = window.setTimeout(
-      () => {
-        ScrollTrigger.refresh();
-        raf = requestAnimationFrame(reveal);
-      },
-      Math.max(60, MIN_COVER - (performance.now() - startedAt.current)),
-    );
-    return () => {
-      window.clearTimeout(id);
-      cancelAnimationFrame(raf);
+    if (!busy.current || !pending.current) return;
+    if (pathname === pending.current) {
+      pending.current = null;
+      arrive();
+    } else if (pushed.current && pathname !== fromPath.current) {
+      window.clearTimeout(grace.current);
+      grace.current = window.setTimeout(() => {
+        if (busy.current && pending.current) {
+          pending.current = null;
+          arrive();
+        }
+      }, 600);
+    }
+  }, [pathname, arrive]);
+
+  // Précédent / suivant pendant une transition : on abandonne la page demandée et on lève la
+  // nappe sur la page où le navigateur revient (aucune navigation forcée ensuite)
+  useEffect(() => {
+    const onPop = () => {
+      if (!busy.current) return;
+      window.clearTimeout(failsafe.current);
+      pending.current = null;
+      window.setTimeout(() => {
+        if (busy.current) reveal();
+      }, 350);
     };
-  }, [pathname, reveal]);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [reveal]);
+
+  // Nettoyage si le fournisseur est démonté (changement de mise en page racine)
+  useEffect(
+    () => () => {
+      window.clearTimeout(arriveTimer.current);
+      window.clearTimeout(failsafe.current);
+      window.clearTimeout(waiting.current);
+      window.clearTimeout(safety.current);
+      window.clearTimeout(grace.current);
+    },
+    [],
+  );
 
   // Focus sur le contenu après navigation (lecteurs d'écran, clavier)
   const first = useRef(true);

@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: p.name,
     description: `${p.name}${p.price !== null ? ` à ${formatPrice(p.price)}` : ""} chez Doka, coffee shop à emporter rue Rambuteau, Paris 4e. ${p.short}`,
     path: `/produits/${p.slug}`,
-    image: m ? { url: m.file, alt: m.alt } : undefined,
+    image: m ? { url: m.file, alt: m.alt, width: m.width, height: m.height } : undefined,
   });
 }
 

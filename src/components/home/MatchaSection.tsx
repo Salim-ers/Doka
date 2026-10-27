@@ -51,7 +51,7 @@ export function MatchaSection() {
           autoAlpha: 0,
           stagger: 0.1,
           duration: 0.8,
-          scrollTrigger: { trigger: ".matcha-facts", start: "top 85%", once: true },
+          scrollTrigger: { trigger: ".matcha-facts", start: "top 92%", once: true },
         });
       });
       return () => mm.revert();

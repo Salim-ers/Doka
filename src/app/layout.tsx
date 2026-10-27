@@ -38,9 +38,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     siteName: "Doka Coffee Shop",
-    images: [
-      { url: "/images/doka/doka-identite-logo.webp", width: 1672, height: 941, alt: "Logo doka sur fond orange" },
-    ],
+    images: [{ url: "/images/doka/doka-og.jpg", width: 1200, height: 630, alt: "doka, fait pour tous les jours" }],
   },
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },

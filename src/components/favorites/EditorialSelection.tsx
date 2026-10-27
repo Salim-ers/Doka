@@ -24,7 +24,7 @@ export function EditorialSelection() {
         gsap.utils.toArray<HTMLElement>(".sel-item", root.current).forEach((item) => {
           const kind = item.dataset.entrance;
           const visual = item.querySelector(".sel-item__visual");
-          const st = { trigger: item, start: "top 78%", once: true };
+          const st = { trigger: item, start: "top 92%", once: true };
           const tl = gsap.timeline({ scrollTrigger: st });
           if (kind === "pour") {
             tl.fromTo(

@@ -53,7 +53,7 @@ export function ProductDetail({ product }: { product: Product }) {
           autoAlpha: 0,
           stagger: 0.1,
           duration: 0.9,
-          scrollTrigger: { trigger: ".pd-suggest", start: "top 85%", once: true },
+          scrollTrigger: { trigger: ".pd-suggest", start: "top 92%", once: true },
         });
         return () => split?.revert();
       });

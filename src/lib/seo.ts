@@ -6,9 +6,15 @@ export function pageMetadata(opts: {
   title: string;
   description: string;
   path: string;
-  image?: { url: string; alt: string };
+  image?: { url: string; alt: string; width?: number; height?: number };
 }): Metadata {
-  const image = opts.image ?? { url: "/images/doka/doka-identite-logo.webp", alt: "Logo doka sur fond orange" };
+  // image de partage par défaut : logo et signature en français (scripts/render-og.mjs)
+  const image = opts.image ?? {
+    url: "/images/doka/doka-og.jpg",
+    alt: "doka, fait pour tous les jours",
+    width: 1200,
+    height: 630,
+  };
   return {
     title: opts.title,
     description: opts.description,
@@ -17,7 +23,7 @@ export function pageMetadata(opts: {
       title: `${opts.title} — Doka Coffee Shop`,
       description: opts.description,
       url: opts.path,
-      images: [{ url: image.url, width: 1672, height: 941, alt: image.alt }],
+      images: [{ url: image.url, width: image.width ?? 1672, height: image.height ?? 941, alt: image.alt }],
     },
   };
 }
