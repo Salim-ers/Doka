@@ -71,7 +71,7 @@ export const siteConfig = {
   legal: {
     company: "DOKA",
     form: "Société par actions simplifiée (SAS)",
-    capital: "1 095 €",
+    capital: "1 095 €",
     headOffice: "45 rue du Simplon, 75018 Paris",
     siren: "105 713 770",
     siret: "105 713 770 00011",

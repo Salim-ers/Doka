@@ -33,14 +33,27 @@ export function EverydayCoffee() {
         const inline = el.querySelector<HTMLElement>(".ev-inline-price");
         if (!giant || !value || !inline) return;
         const counter = { v: 0 };
-        // Position de départ du grand prix : superposé au prix de la phrase
+        // Position de départ du grand prix : superposé au prix de la phrase (mesuré sur le
+        // chiffre seul, pas sur tout le bloc avec sa légende)
+        const giantPrice = giant.querySelector<HTMLElement>(".ev-giant__price") ?? giant;
         const startVars = () => {
           const a = inline.getBoundingClientRect();
-          const b = giant.getBoundingClientRect();
+          const b = giantPrice.getBoundingClientRect();
           const s = a.height / b.height || 0.2;
           return { x: a.left - b.left, y: a.top - b.top, scale: s };
         };
         let from = { x: 0, y: 0, scale: 0.2 };
+        // La première ligne entre dès que la section arrive : jamais d'écran orange vide
+        gsap.fromTo(
+          ".ev-line--1 .ev-line__in",
+          { yPercent: 108 },
+          {
+            yPercent: 0,
+            duration: 0.9,
+            ease: "doka.out",
+            scrollTrigger: { trigger: el, start: "top 65%", toggleActions: "play none none reverse" },
+          },
+        );
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
@@ -56,30 +69,26 @@ export function EverydayCoffee() {
           },
         });
         from = startVars();
-        tl.fromTo(".ev-line--1 .ev-line__in", { yPercent: 108 }, { yPercent: 0, duration: 0.6, ease: "power2.out" }, 0)
-          .fromTo(
-            ".ev-line--2 .ev-line__in",
-            { yPercent: 108 },
-            { yPercent: 0, duration: 0.6, ease: "power2.out" },
-            0.5,
-          )
+        tl.fromTo(".ev-line--2 .ev-line__in", { yPercent: 108 }, { yPercent: 0, duration: 0.6, ease: "power2.out" }, 0)
           .fromTo(
             ".ev-line--3 .ev-line__in",
             { yPercent: 108 },
             { yPercent: 0, duration: 0.6, ease: "power2.out" },
-            1.0,
+            0.45,
           )
-          .to(".ev-note", { autoAlpha: 1, duration: 0.3 }, 1.3)
+          .to(".ev-note", { autoAlpha: 1, duration: 0.3 }, 0.8)
+          // la légende s'efface avant que le prix ne grandisse : rien ne se superpose
+          .to(".ev-note", { autoAlpha: 0, y: -20, duration: 0.25 }, 1.2)
           // le prix sort de la phrase et prend tout l'écran
-          .set(giant, { autoAlpha: 1 }, 1.9)
-          .set(inline, { autoAlpha: 0 }, 1.9)
+          .set(giant, { autoAlpha: 1 }, 1.45)
+          .set(inline, { autoAlpha: 0 }, 1.45)
           .fromTo(
             giant,
             { x: () => from.x, y: () => from.y, scale: () => from.scale },
             { x: 0, y: 0, scale: 1, duration: 1, ease: "power2.inOut" },
-            1.9,
+            1.45,
           )
-          .to(".ev-title, .ev-note", { autoAlpha: 0, y: -30, duration: 0.5 }, 1.95)
+          .to(".ev-title", { autoAlpha: 0, y: -30, duration: 0.4 }, 1.45)
           .to(
             counter,
             {
@@ -89,24 +98,24 @@ export function EverydayCoffee() {
                 value.textContent = formatPrice(Math.round(counter.v / 10) * 10, { currency: false });
               },
             },
-            1.9,
+            1.45,
           )
-          .fromTo(".ev-giant__note", { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.3 }, 2.8)
-          // l'échelle du quotidien, le fond devient crème
-          .to(el, { "--ev-bg": "#FFFBEA", "--ev-fg": "#171714", duration: 0.6 }, 3.5)
-          .to(giant, { autoAlpha: 0, yPercent: -30, duration: 0.5 }, 3.45)
-          .fromTo(".ev-ladder", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 3.75)
+          .fromTo(".ev-giant__note", { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.3 }, 2.3)
+          // le grand prix s'en va entièrement, puis le fond passe au crème et l'échelle se dessine
+          .to(giant, { autoAlpha: 0, yPercent: -30, duration: 0.45 }, 2.95)
+          .to(el, { "--ev-bg": "#FFFBEA", "--ev-fg": "#171714", duration: 0.5 }, 3.3)
+          .fromTo(".ev-ladder", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 3.6)
           .fromTo(
             ".ev-ladder__row",
             { autoAlpha: 0, x: -30 },
             { autoAlpha: 1, x: 0, stagger: 0.12, duration: 0.3 },
-            3.8,
+            3.65,
           )
           .fromTo(
             ".ev-ladder__bar",
             { scaleX: 0 },
             { scaleX: 1, stagger: 0.12, duration: 0.5, ease: "power2.out", transformOrigin: "0% 50%" },
-            3.85,
+            3.7,
           )
           .to({}, { duration: 0.5 });
         return () => {

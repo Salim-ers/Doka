@@ -39,6 +39,10 @@ test("Mobile : carrousel des incontournables au toucher, pas de débordement", a
     });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, p).toBeLessThanOrEqual(1);
+    // sur mobile, un élément trop large élargit toute la page (en-tête coupé) sans créer
+    // de défilement horizontal : la fenêtre de mise en page doit rester à la largeur de l'écran
+    const layoutWidth = await page.evaluate(() => window.innerWidth);
+    expect(layoutWidth, p).toBe(page.viewportSize()!.width);
   }
   await page.goto("/");
   const viewport = page.locator(".inc-viewport");

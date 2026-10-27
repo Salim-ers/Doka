@@ -52,7 +52,7 @@ export const products: Product[] = [
     price: 150,
     short: "Le petit noir du quotidien.",
     description:
-      "Un espresso court et serré, la base de tout chez Doka. À 1,50 €, pour qu'un bon café reste un réflexe de tous les jours.",
+      "Un espresso court et serré, la base de tout chez Doka. À 1,50 €, pour qu'un bon café reste un réflexe de tous les jours.",
     media: "espresso",
     mediaCaption: "Extraction dans un gobelet Doka",
     options: ALL,
@@ -240,7 +240,8 @@ export function formatPrice(cents: number | null, opts: { signed?: boolean; curr
   const abs = Math.abs(cents);
   const value = (abs / 100).toFixed(2).replace(".", ",");
   const sign = signed ? (cents < 0 ? "−" : "+") : cents < 0 ? "−" : "";
-  return `${sign}${value}${currency ? " €" : ""}`;
+  // espace insécable : le « € » ne passe jamais seul à la ligne
+  return `${sign}${value}${currency ? "\u00a0€" : ""}`;
 }
 
 /** Fourchette de prix de la carte (calculée, jamais saisie à la main). */

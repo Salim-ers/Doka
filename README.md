@@ -123,6 +123,7 @@ Autres moments :
 ## Qualité
 
 - **SEO** : métadonnées par page, URL canoniques, Open Graph, `sitemap.xml`, `robots.txt`, données structurées `CafeOrCoffeeShop` (adresse, horaires, carte) et `MenuItem` par produit. La note Google n'apparaît que dans une pastille du hero (`siteConfig.googleRating`), jamais dans les données structurées (Google ignore les avis auto-déclarés).
+- **Formats d'écran** : vérifiés sur 12 formats (téléphones 360 à 430 px, téléphone à l'horizontale, tablettes en portrait et en paysage, portables, 1080p, 1440p). Téléphone à l'horizontale : hero en deux colonnes, menu, titres et fiche produit adaptés à la hauteur. Écrans tactiles : cibles d'au moins 44 px. Un test vérifie qu'aucun élément trop large n'élargit la page sur mobile.
 - **Accessibilité** : lien d'évitement, focus visibles, un seul `h1` par page, onglets ARIA au clavier, menu et visionneuse modaux (focus piégé, Échap, page inerte derrière), FAQ en `<details>`, textes alternatifs, contrastes vérifiés.
 - **Vie privée** : aucun traceur propre au site. Favoris en `localStorage`, effaçables depuis `/confidentialite`. La carte Google Maps de « Nous trouver » est affichée directement (Google peut y déposer ses cookies : c'est indiqué sur `/confidentialite`).
 

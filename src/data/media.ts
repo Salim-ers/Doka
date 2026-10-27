@@ -312,7 +312,7 @@ export const media: Record<MediaId, MediaItem> = {
     width: W,
     height: H,
     placements: ["/esprit-doka — Une carte qui tient sur un tableau"],
-    alt: "La carte officielle de Doka avec les prix, de l'espresso à 1,50 € à la boisson signature coco-matcha à 5,50 €",
+    alt: "La carte officielle de Doka avec les prix, de l'espresso à 1,50 € à la boisson signature coco-matcha à 5,50 €",
     usage: "Source des données de src/data/products.ts",
     sourceQuality: SOURCE,
     focus: "40% 50%",

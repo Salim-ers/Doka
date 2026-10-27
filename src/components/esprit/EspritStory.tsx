@@ -57,29 +57,48 @@ export function EspritStory() {
         items.forEach((item, i) => {
           const big = item.querySelector(".ch-item__big");
           const small = item.querySelector(".ch-item__text");
-          const at = i * 1.2;
-          tl.fromTo(
-            big,
-            { yPercent: 100, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" },
-            at,
-          )
-            .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, at + 0.15)
-            .to(
-              ".ch-progress__dot",
-              {
-                scale: (k: number) => (k === i ? 1.8 : 1),
-                backgroundColor: (k: number) => (k <= i ? "#F14323" : "rgba(23,23,20,0.18)"),
-                duration: 0.2,
-              },
+          // le premier chapitre entre dès que la section arrive (jamais d'écran vide) ;
+          // les suivants se relaient au scroll
+          const at = i * 1.2 - 0.6;
+          if (i === 0) {
+            gsap
+              .timeline({
+                scrollTrigger: { trigger: ".ch", start: "top 65%", toggleActions: "play none none reverse" },
+              })
+              .fromTo(
+                big,
+                { yPercent: 100, autoAlpha: 0 },
+                { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "doka.out" },
+              )
+              .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 0.2);
+            gsap.set(".ch-progress__dot", {
+              scale: (k: number) => (k === 0 ? 1.8 : 1),
+              backgroundColor: (k: number) => (k === 0 ? "#F14323" : "rgba(23,23,20,0.18)"),
+            });
+          } else {
+            tl.fromTo(
+              big,
+              { yPercent: 100, autoAlpha: 0 },
+              { yPercent: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" },
               at,
-            );
+            )
+              .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, at + 0.15)
+              .to(
+                ".ch-progress__dot",
+                {
+                  scale: (k: number) => (k === i ? 1.8 : 1),
+                  backgroundColor: (k: number) => (k <= i ? "#F14323" : "rgba(23,23,20,0.18)"),
+                  duration: 0.2,
+                },
+                at,
+              );
+          }
           if (i < items.length - 1) {
-            tl.to(big, { yPercent: -100, autoAlpha: 0, duration: 0.5, ease: "power2.in" }, at + 0.95).to(
-              small,
-              { y: -20, autoAlpha: 0, duration: 0.3 },
-              at + 0.95,
-            );
+            tl.to(
+              big,
+              { yPercent: -100, autoAlpha: 0, duration: 0.5, ease: "power2.in" },
+              Math.max(0.05, at + 0.95),
+            ).to(small, { y: -20, autoAlpha: 0, duration: 0.3 }, Math.max(0.05, at + 0.95));
           }
         });
         tl.to({}, { duration: 0.4 });

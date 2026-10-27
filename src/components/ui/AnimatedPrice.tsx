@@ -56,7 +56,7 @@ export function AnimatedPrice({ cents, className, countUp = true, trigger }: Pro
       <span className="sr-only">{label}</span>
       <span aria-hidden="true">
         <span data-value>{formatPrice(cents, { currency: false })}</span>
-        <span className="price__cur"> €</span>
+        <span className="price__cur">{"\u00a0€"}</span>
       </span>
     </span>
   );

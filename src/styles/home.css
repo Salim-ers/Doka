@@ -432,7 +432,7 @@
   }
   .hero__sticker {
     top: auto;
-    bottom: 40%;
+    bottom: 34%;
     right: 1rem;
     width: 92px;
   }
@@ -610,6 +610,9 @@
 .ev.is-animated .ev-ladder {
   position: absolute;
   inset: var(--header-h) var(--gutter) 2rem;
+  /* largeur = l'écran moins les marges (sinon la colonne des prix déborde à droite) */
+  width: auto;
+  max-width: 980px;
   margin: auto;
   opacity: 0;
 }
@@ -689,6 +692,8 @@
   gap: clamp(1.5rem, 4vh, 3rem);
 }
 .inc.is-scrubbed .inc-sticky {
+  /* la frise (max-content) ne doit pas élargir la colonne : titre, note et barre restent à l'écran */
+  grid-template-columns: minmax(0, 1fr);
   position: sticky;
   top: 0;
   height: 100svh;
@@ -1002,8 +1007,10 @@
   .cm-grid {
     grid-template-columns: 0.75fr 1.25fr;
   }
+  /* mobile : le filet longe le bord droit, il ne traverse plus le titre ni le texte */
   .cm-stream {
-    left: 40%;
+    left: auto;
+    right: calc(var(--gutter) * 0.2 - 18px);
   }
 }
 
@@ -1111,4 +1118,56 @@
 .ad .dbtn--outline {
   --b-fill: var(--ink);
   --b-fill-fg: var(--cream);
+}
+
+/* ==========================================================================
+   Téléphone à l'horizontale (peu de hauteur) : texte à gauche, scène à droite
+   ========================================================================== */
+@media (max-width: 1239px) and (max-height: 520px) and (orientation: landscape) {
+  .hero__stage {
+    top: var(--header-h);
+    bottom: var(--dock-space, 0px);
+    left: 47%;
+    right: 0;
+    height: auto;
+  }
+  .hero__stage[data-mode="video"] .hero__media {
+    left: 0;
+    width: 100%;
+  }
+  .hero__poster img,
+  .hero__stage[data-mode="video"] .hero__poster img {
+    object-position: 50% 50%;
+  }
+  .hero__copy {
+    top: calc(var(--header-h) + 0.3rem);
+    bottom: auto;
+    left: var(--gutter);
+    right: auto;
+    width: 44%;
+    gap: 0.55rem;
+  }
+  .hero__kicker {
+    font-size: 0.9rem;
+  }
+  .hero__title {
+    font-size: clamp(1.9rem, 12vh, 3.4rem);
+  }
+  .hero__lead {
+    display: none;
+  }
+  .hero__ctas .dbtn--lg {
+    min-height: 44px;
+    padding: 0 1.05rem;
+    font-size: 0.92rem;
+  }
+  .hero__badges {
+    display: none;
+  }
+  .hero__sticker {
+    top: calc(var(--header-h) + 0.4rem);
+    bottom: auto;
+    right: 0.8rem;
+    width: 76px;
+  }
 }
