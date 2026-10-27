@@ -6,11 +6,13 @@ import { ArrowDown } from "lucide-react";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { DokaLogo } from "@/components/brand/DokaLogo";
+import { DokaCup } from "@/components/brand/DokaCup";
 import { formatPrice, productsBySlug } from "@/data/products";
 import { siteConfig } from "@/data/site-config";
 import { entranceDelay } from "@/lib/entrance";
-import type { TakeawayScene } from "./scene/takeaway-scene";
-import { HANDOFF_AT, HANDOFF_HERO, RELEASE_AT } from "./scene/timing";
+import type { HeadPoint, TakeawayScene } from "./scene/takeaway-scene";
+import { HANDOFF_HERO } from "./scene/timing";
+import { lineAt, sampleTrack, type Speaker } from "./dialogue";
 import videoMeta from "../../../../public/videos/hero-takeaway.json";
 
 /**
@@ -50,7 +52,7 @@ function preferVideo() {
 
 /**
  * Point de passage du gobelet dans la vidéo : `local` dans le bloc média (origine du zoom),
- * `stage` dans la scène (position du slogan). Mesures de mise en page, hors transformations.
+ * `stage` dans la scène (origine de la nappe). Mesures de mise en page, hors transformations.
  */
 function videoHandoff(media: HTMLElement) {
   const local = coverPoint(
@@ -82,7 +84,7 @@ export function HeroExperience() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const zoomImgRef = useRef<HTMLImageElement>(null);
-  const sloganRef = useRef<HTMLDivElement>(null);
+  const talkRefs = useRef<Record<Speaker, HTMLDivElement | null>>({ customer: null, barista: null });
   const floodRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<TakeawayScene | null>(null);
   const modeRef = useRef<Mode>("poster");
@@ -96,35 +98,41 @@ export function HeroExperience() {
     setModeState(m);
   };
 
-  // --- Slogan « made for every day » au passage du gobelet
-  const sloganTl = useRef<gsap.core.Timeline | null>(null);
-  const sloganOn = useRef(false);
-  function showSlogan(on: boolean) {
-    const s = sloganRef.current;
-    if (!s || sloganOn.current === on) return;
-    sloganOn.current = on;
-    const chars = s.querySelectorAll(".hero-slogan__char");
-    sloganTl.current?.kill();
-    sloganTl.current = on
-      ? gsap
-          .timeline()
-          .set(s, { autoAlpha: 1 })
-          .fromTo(
-            chars,
-            { yPercent: 110, autoAlpha: 0 },
-            { yPercent: 0, autoAlpha: 1, duration: 0.6, stagger: 0.022, ease: "doka.out" },
-          )
-      : gsap.timeline().to(chars, { yPercent: -110, autoAlpha: 0, duration: 0.4, stagger: 0.012, ease: "power2.in" });
-  }
-
-  /** Place le slogan (et l'origine de la nappe) sur le gobelet. */
-  function placeSlogan(x: number, y: number, zoom: number) {
+  /** Position du gobelet à l'écran : origine de la nappe orange au scroll. */
+  function trackCup(x: number, y: number) {
     cupScreen.current.x = x;
     cupScreen.current.y = y;
-    const s = sloganRef.current;
-    if (!s) return;
-    s.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    s.style.setProperty("--z", zoom.toFixed(3));
+  }
+
+  // --- Dialogue au guichet : une bulle par personnage, ancrée au-dessus de sa tête.
+  // Recalculé à chaque image à partir du temps de la boucle (sans état intermédiaire) :
+  // une bulle ne peut pas rester affichée vide ou figée, même après un zoom ou un
+  // redimensionnement de la fenêtre.
+  function updateTalk(t: number, heads: Record<Speaker, HeadPoint> | null, enabled: boolean) {
+    const stage = stageRef.current;
+    if (!stage) return;
+    for (const who of ["customer", "barista"] as const) {
+      const el = talkRefs.current[who];
+      const bubble = el?.firstElementChild as HTMLElement | null;
+      if (!el || !bubble) continue;
+      const head = heads?.[who];
+      const line = enabled && head && head.o > 0.6 ? lineAt(who, t) : undefined;
+      if (!line || !head) {
+        if (el.dataset.show !== undefined) delete el.dataset.show;
+        continue;
+      }
+      if (bubble.textContent !== line.text) bubble.textContent = line.text;
+      // le client parle vers la gauche, le barista vers la droite ; la bulle reste dans le cadre
+      const w = bubble.offsetWidth;
+      const h = bubble.offsetHeight;
+      const margin = 10;
+      let x = head.x;
+      if (who === "customer") x = Math.max(x, margin + w);
+      else x = Math.min(x, stage.offsetWidth - margin - w);
+      const y = Math.max(head.y, h + margin + 12);
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      if (el.dataset.show === undefined) el.dataset.show = "";
+    }
   }
 
   // --- Chargement différé de la scène (3D temps réel ou vidéo)
@@ -146,9 +154,11 @@ export function HeroExperience() {
       try {
         scene = createTakeawayScene(canvasRef.current, {
           quality: "high",
-          onHandoff: () => showSlogan(true),
-          onRelease: () => showSlogan(false),
-          onFrame: ({ cupX, cupY, zoom }) => placeSlogan(cupX, cupY, zoom),
+          onFrame: ({ cupX, cupY, zoom, time, customer, barista }) => {
+            trackCup(cupX, cupY);
+            // le dialogue s'efface dès que la vue plonge vers le gobelet
+            updateTalk(time, { customer, barista }, zoom < 0.04);
+          },
         });
       } catch {
         setMode("video");
@@ -195,7 +205,7 @@ export function HeroExperience() {
     };
   }, []);
 
-  // --- Mode vidéo : lecture, slogan synchronisé sur le temps de la vidéo, pause hors écran
+  // --- Mode vidéo : lecture, dialogue synchronisé sur le temps de la vidéo, pause hors écran
   useEffect(() => {
     if (mode !== "video") return;
     const v = videoRef.current;
@@ -205,11 +215,29 @@ export function HeroExperience() {
     let raf = 0;
     const place = () => {
       const p = videoHandoff(media).stage;
-      placeSlogan(p.x, p.y, 0);
+      trackCup(p.x, p.y);
+    };
+    /** Point normalisé de la vidéo → position dans la scène (vidéo en object-fit: cover). */
+    const toStage = (nx: number, ny: number) => {
+      const local = coverPoint(
+        { width: media.offsetWidth, height: media.offsetHeight },
+        videoMeta.width,
+        videoMeta.height,
+        nx,
+        ny,
+      );
+      return { x: media.offsetLeft + local.x, y: media.offsetTop + local.y };
     };
     const loop = () => {
       const t = v.currentTime;
-      if (!zoomLocked.current) showSlogan(t >= HANDOFF_AT && t < RELEASE_AT);
+      const { talk } = videoMeta;
+      const [cx, cy, co] = sampleTrack(talk.customer, talk.fps, t);
+      const [bx, by] = sampleTrack(talk.barista, talk.fps, t);
+      updateTalk(
+        t,
+        { customer: { ...toStage(cx, cy), o: co }, barista: { ...toStage(bx, by), o: 1 } },
+        !zoomLocked.current,
+      );
       raf = requestAnimationFrame(loop);
     };
     const onPlaying = () => {
@@ -217,7 +245,11 @@ export function HeroExperience() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(loop);
     };
-    const onPause = () => cancelAnimationFrame(raf);
+    const onPause = () => {
+      cancelAnimationFrame(raf);
+      // vidéo en pause (zoom au scroll, hors écran) : plus de bulle
+      updateTalk(0, null, false);
+    };
     v.addEventListener("playing", onPlaying);
     v.addEventListener("pause", onPause);
     const io = new IntersectionObserver(([e]) => {
@@ -332,7 +364,7 @@ export function HeroExperience() {
           const ty = (stage.offsetHeight * 0.56 - p.y) * e;
           gsap.set(media, { x: tx, y: ty, scale: s, transformOrigin: `${local.x}px ${local.y}px` });
           gsap.set(zoomImgRef.current, { autoAlpha: gsap.utils.clamp(0, 1, (e - 0.5) / 0.25) });
-          placeSlogan(p.x + tx, p.y + ty, e);
+          trackCup(p.x + tx, p.y + ty);
         };
         const setVideoScroll = (p: number) => {
           const v = videoRef.current;
@@ -341,7 +373,6 @@ export function HeroExperience() {
             zoomLocked.current = true;
             v.pause();
             v.currentTime = HANDOFF_HERO;
-            showSlogan(true);
           } else if (p <= 0.005 && zoomLocked.current) {
             zoomLocked.current = false;
             v.play().catch(() => {});
@@ -401,8 +432,6 @@ export function HeroExperience() {
     { scope: root },
   );
 
-  const slogan = "fait pour tous les jours";
-
   return (
     <section ref={root} className="hero" aria-labelledby="hero-title">
       <div className="hero__sticky">
@@ -458,15 +487,18 @@ export function HeroExperience() {
             </>
           )}
           <canvas ref={canvasRef} className="hero__canvas" aria-hidden="true" />
-          <div ref={sloganRef} className="hero-slogan" aria-hidden="true">
-            <span className="hero-slogan__inner brandline">
-              {slogan.split("").map((c, i) => (
-                <span key={i} className="hero-slogan__char">
-                  {c === " " ? " " : c}
-                </span>
-              ))}
-            </span>
-          </div>
+          {(["customer", "barista"] as const).map((who) => (
+            <div
+              key={who}
+              ref={(el) => {
+                talkRefs.current[who] = el;
+              }}
+              className={`hero-talk hero-talk--${who}`}
+              aria-hidden="true"
+            >
+              <p className="hero-talk__bubble" />
+            </div>
+          ))}
         </div>
 
         <ul className="hero__badges" aria-label="En bref">
@@ -487,6 +519,9 @@ export function HeroExperience() {
           </li>
           <li className="hero__badge hero__badge--oat" data-reveal="hero">
             lait d&apos;avoine <strong>offert</strong>
+          </li>
+          <li className="hero__badge hero__badge--cup" data-reveal="hero" aria-hidden="true">
+            <DokaCup />
           </li>
         </ul>
 

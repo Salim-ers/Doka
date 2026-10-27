@@ -65,7 +65,7 @@ src/
                           (/produits → /la-carte et /le-coffee-shop → /esprit-doka : redirections)
   components/
     brand/                logo officiel vectorisé (lettres séparées, jamais déformées)
-    layout/               Header, FullscreenMenu, SiteLoader, PageTransition, Footer, BackToTop
+    layout/               Header, FullscreenMenu, SiteLoader, PageTransition, Footer, BackToTop, MobileDock
     home/                 sections de l'accueil ; hero/ = expérience « Ton café. À emporter. »
       hero/scene/         scène Three.js : maquette, personnages, textures, timing
     menu/                 MenuBoard (carte filtrable, photo par produit), MenuCategoryTabs
@@ -100,14 +100,15 @@ Un langage commun (courbes `doka.out`, `doka.inOut`, `doka.pop` dans `src/lib/gs
 
 | Signature | Où | Ce qui se passe |
 | --- | --- | --- |
-| **Le moment Doka** — « Ton café. À emporter. » | Hero de l'accueil | Maquette 3D de la devanture : un client arrive, le barista se retourne, attrape un gobelet Doka, le tend ; au passage de main « fait pour tous les jours » apparaît ; le client repart. Pastilles orange (prix de l'espresso, note Google, chaud ou glacé, lait d'avoine offert) qui flottent. Caméra qui suit la souris ; au scroll, plongée vers le gobelet puis nappe orange qui s'ouvre depuis lui. |
+| **Le moment Doka** — « Ton café. À emporter. » | Hero de l'accueil | Maquette 3D de la devanture : un client arrive, le barista se retourne, attrape un gobelet Doka, le tend ; le client repart. Un vrai dialogue en bulles accompagne la scène (« Salut ! Comme d'habitude ? », « Oui, un latte glacé ! », « Et voilà, bien frais ! »…) : texte et minutage dans `hero/dialogue.ts`, bulles ancrées au-dessus des têtes (positions fournies par la scène 3D, ou enregistrées dans `hero-takeaway.json` pour la vidéo mobile). Pastilles orange (prix de l'espresso, note Google, chaud ou glacé, lait d'avoine offert) et gobelet doka illustré (`DokaCup`, vapeur animée) qui flottent. Caméra qui suit la souris ; au scroll, plongée vers le gobelet puis nappe orange qui s'ouvre depuis lui. |
 | **Le café du quotidien** | Accueil, section 2 | Section collante : « le bon café, / tous les jours, / dès 1,50 € », le prix quitte la phrase et grossit en comptant, puis l'échelle des prix se dessine et le fond passe de l'orange au crème. |
 | **La vague de café** | Entre les grandes sections (accueil, esprit) | Transition SVG organique : le liquide de la section suivante monte en vagues, précédé d'un filet de lait ou de crema. |
 
 Autres moments :
 
 - **Écran de chargement** (`SiteLoader`, 100 % CSS, ≈ 2 s à chaque chargement complet) : nappe orange, lettres du logo posées une à une, signature, jauge et compteur jusqu'à 100 %, puis la nappe se lève en s'arrondissant.
-- **Transition de page** (`PageTransition`, ≈ 1,7 s) : cercle orange qui s'ouvre depuis le point cliqué, lettres du logo et nom de la page d'arrivée, puis la nappe se lève. La page n'est jamais révélée avant d'être prête ; le dernier clic gagne en cas de clics rapides. Les titres de la nouvelle page attendent l'ouverture (`lib/entrance.ts`).
+- **Transition de page** (`PageTransition`, ≈ 1,3 s) : la nappe orange monte du bas (bord arrondi), les lettres du logo se posent avec le nom de la page d'arrivée, puis la nappe repart par le haut. Animée uniquement en `transform` / `opacity` avec l'API Web Animations, donc calculée par le compositeur : elle reste fluide pendant que la nouvelle page se construit (rendu et recalcul des animations au scroll se font sous la nappe). La page n'est jamais révélée avant d'être prête ; le dernier clic gagne en cas de clics rapides. Les titres de la nouvelle page attendent l'ouverture (`lib/entrance.ts`), la scène 3D aussi.
+- **Barre d'accès rapide** (`MobileDock`, sous 1240 px, là où l'en-tête n'a que le bouton Menu) : « La carte » et « Itinéraire » fixés en bas de l'écran ; le hero, le pied de page et le bouton retour en haut lui laissent la place (`--dock-space`).
 - Menu mobile qui gonfle depuis le bouton, titres révélés par masques (SplitText), photos révélées selon leur sujet (le café « coule » de haut en bas, le matcha s'ouvre depuis le point du « o »), frise horizontale des incontournables, carte filtrée en cascade (la liste reste dans le flux, la carte revient en haut de l'écran), cœurs qui éclatent en pastilles, cartes produits en profondeur, footer dont les lettres du logo se posent une à une.
 
 **Mouvement réduit** (`prefers-reduced-motion`) : pas d'écran de chargement, pas de 3D (poster), sections narratives affichées en clair, navigation sans nappe. **Sans JavaScript**, tout le contenu reste lisible (les états « avant animation » n'existent que si JS tourne, avec un filet de sécurité CSS).

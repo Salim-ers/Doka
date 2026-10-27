@@ -363,7 +363,7 @@
   display: grid;
   justify-items: center;
   gap: clamp(0.8rem, 2vh, 1.3rem);
-  width: min(52vw, 440px);
+  width: clamp(200px, min(48vw, 80vh), 620px);
 }
 /* Les lettres montent depuis la ligne de base (débord autorisé au-dessus pour le rebond) */
 .page-curtain__logo {
@@ -380,7 +380,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-size: clamp(1.1rem, 1.7vw, 2rem);
   letter-spacing: -0.02em;
   opacity: 0;
 }

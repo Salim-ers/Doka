@@ -97,42 +97,72 @@
 .hero__stage[data-mode="live"] .hero__canvas {
   opacity: 1;
 }
-.hero-slogan {
+/* Dialogue au guichet : un point d'ancrage au-dessus de chaque tête (placé en JS),
+   la bulle part de ce point, vers la gauche pour le client, vers la droite pour le barista. */
+.hero-talk {
   position: absolute;
   left: 0;
   top: 0;
   z-index: 3;
-  visibility: hidden;
+  width: 0;
+  height: 0;
   pointer-events: none;
   will-change: transform;
 }
-.hero-slogan__inner {
-  display: inline-flex;
-  translate: -50% calc(-100% - 6vh - var(--z, 0) * 16vh);
-  scale: calc(1 + var(--z, 0) * 0.35);
-  padding: 0.55em 0.95em 0.6em;
-  border-radius: var(--r-pill);
-  background: var(--ink);
-  color: var(--cream);
-  font-size: clamp(1rem, 1.6vw, 1.5rem);
-  white-space: nowrap;
-  overflow: hidden;
-  box-shadow: 0 14px 30px -14px rgb(23 23 20 / 0.6);
+.hero-talk__bubble {
+  position: absolute;
+  bottom: 12px;
+  width: max-content;
+  max-width: min(14em, 44vw);
+  margin: 0;
+  padding: 0.6em 0.95em 0.65em;
+  border-radius: 1.15em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.82rem, 0.62rem + 0.5vw, 1.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  box-shadow: 0 12px 26px -14px rgb(23 23 20 / 0.65);
+  opacity: 0;
+  transform: translateY(6px) scale(0.6);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 380ms var(--ease-pop);
 }
-.hero-slogan__inner::after {
+.hero-talk[data-show] .hero-talk__bubble {
+  opacity: 1;
+  transform: none;
+}
+/* petite queue vers la tête */
+.hero-talk__bubble::after {
   content: "";
   position: absolute;
-  left: 50%;
-  bottom: -7px;
+  bottom: -6px;
   width: 14px;
   height: 14px;
-  translate: -50% 0;
+  background: inherit;
+  border-radius: 2px;
   rotate: 45deg;
-  background: var(--ink);
-  border-radius: 3px;
 }
-.hero-slogan__char {
-  display: inline-block;
+.hero-talk--customer .hero-talk__bubble {
+  right: -8px;
+  transform-origin: 100% 100%;
+  background: var(--ink);
+  color: var(--cream);
+  border-bottom-right-radius: 0.35em;
+}
+.hero-talk--customer .hero-talk__bubble::after {
+  right: 12px;
+}
+.hero-talk--barista .hero-talk__bubble {
+  left: -8px;
+  transform-origin: 0% 100%;
+  background: #fff;
+  color: var(--ink);
+  border-bottom-left-radius: 0.35em;
+}
+.hero-talk--barista .hero-talk__bubble::after {
+  left: 12px;
 }
 .hero__copy {
   position: absolute;
@@ -203,16 +233,16 @@
   bottom: calc(var(--hero-copy-bottom) + var(--hero-copy-h, 30rem) + var(--badge-gap));
   width: min(46vw, 920px);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   align-content: center;
-  gap: clamp(0.4rem, 1.2vw, 1.2rem);
+  gap: clamp(0.4rem, 1vw, 1.1rem);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .hero__badge {
-  --s: clamp(72px, min(10vw, var(--avail)), 200px);
+  --s: clamp(72px, min(8.2vw, var(--avail)), 200px);
   display: grid;
   place-content: center;
   width: var(--s);
@@ -245,11 +275,11 @@
   text-decoration: none;
 }
 .hero__badge--price {
-  --s: clamp(80px, min(12vw, var(--avail)), 240px);
+  --s: clamp(80px, min(10vw, var(--avail)), 240px);
   --rot: -8deg;
 }
 .hero__badge--google {
-  --s: clamp(72px, min(10vw, calc(var(--avail) * 0.9)), 200px);
+  --s: clamp(72px, min(8.2vw, calc(var(--avail) * 0.9)), 200px);
   --rot: 6deg;
   --dy: 6%;
   background: var(--orange-text);
@@ -267,7 +297,7 @@
   letter-spacing: 0.06em;
 }
 .hero__badge--iced {
-  --s: clamp(64px, min(8.5vw, calc(var(--avail) * 0.78)), 172px);
+  --s: clamp(64px, min(6.9vw, calc(var(--avail) * 0.78)), 172px);
   --rot: -4deg;
   --dy: -8%;
   background: #ffb199;
@@ -276,9 +306,57 @@
   color: var(--ink);
 }
 .hero__badge--oat {
-  --s: clamp(64px, min(8vw, calc(var(--avail) * 0.74)), 162px);
+  --s: clamp(64px, min(6.5vw, calc(var(--avail) * 0.74)), 162px);
   --rot: 10deg;
   --dy: 8%;
+}
+/* Le gobelet doka, à droite des pastilles : un vrai café, en grand, avec sa vapeur */
+.hero__badge--cup {
+  --s: clamp(90px, min(12vw, calc(var(--avail) * 1.2)), 300px);
+  --rot: 7deg;
+  width: calc(var(--s) * 0.8);
+  aspect-ratio: 200 / 250;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 14px 18px rgb(23 23 20 / 0.25));
+}
+.doka-cup {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.doka-cup__steam {
+  color: #ffb199;
+}
+.doka-cup__steam path {
+  animation: cup-steam 2.6s var(--ease-in-out) infinite;
+}
+.doka-cup__steam path:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.doka-cup__steam path:nth-child(3) {
+  animation-delay: 1s;
+}
+@keyframes cup-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .doka-cup__steam path {
+    animation: none;
+  }
 }
 /* Écran très bas : pas la place pour les pastilles au-dessus du titre */
 @media (min-width: 900px) and (max-height: 600px) {
@@ -371,7 +449,8 @@
     padding: 0.4rem;
   }
   .hero__badge--iced,
-  .hero__badge--oat {
+  .hero__badge--oat,
+  .hero__badge--cup {
     display: none;
   }
   .hero__scroll {
@@ -387,6 +466,42 @@
 @media (max-width: 899px) and (max-height: 720px) {
   .hero__lead {
     display: none;
+  }
+}
+/* Tablette en portrait : la scène occupe toute la hauteur libre sous le texte (hauteur du
+   texte mesurée en JS : --hero-copy-h), sans bande vide ; les quatre pastilles, plus grandes. */
+@media (min-width: 600px) and (max-width: 899px) and (min-height: 700px) {
+  .hero__stage {
+    top: calc(var(--header-h) + 0.8rem + var(--hero-copy-h, 22rem) + 1rem);
+    bottom: var(--dock-space, 0px);
+    height: auto;
+  }
+  .hero__badges {
+    gap: 0.7rem;
+  }
+  .hero__badge {
+    --s: 108px;
+  }
+  .hero__badge--iced,
+  .hero__badge--oat {
+    display: grid;
+  }
+  .hero__badge--iced {
+    --dy: -10%;
+  }
+  .hero__badge--oat {
+    --dy: 6%;
+  }
+  .hero__sticker {
+    width: 116px;
+  }
+}
+/* … et le gobelet doka au bout de la rangée quand la largeur le permet */
+@media (min-width: 640px) and (max-width: 899px) and (min-height: 700px) {
+  .hero__badge--cup {
+    display: block;
+    --s: 118px;
+    padding: 0;
   }
 }
 

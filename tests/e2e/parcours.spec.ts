@@ -16,6 +16,22 @@ test.describe("Parcours principal", () => {
     expect(errors).toEqual([]);
   });
 
+  test("Accueil : le dialogue au guichet s'affiche, jamais de bulle vide", async ({ page }) => {
+    const errors = trackErrors(page);
+    await page.goto("/");
+    // une réplique apparaît dans la boucle de 12 s de la scène
+    const shown = page.locator(".hero-talk[data-show] .hero-talk__bubble");
+    await expect(shown.first()).toBeVisible({ timeout: 20_000 });
+    await expect(shown.first()).toHaveText(/\S/);
+    // sur la suite de la boucle, toute bulle affichée a un texte
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(700);
+      const texts = await page.$$eval(".hero-talk[data-show]", (els) => els.map((e) => e.textContent?.trim() ?? ""));
+      for (const t of texts) expect(t).not.toBe("");
+    }
+    expect(errors).toEqual([]);
+  });
+
   test("3-8. Carte, filtre, fiche produit, favori persistant puis supprimé", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/");

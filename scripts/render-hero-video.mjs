@@ -1,6 +1,7 @@
 // Version vidéo de la scène du hero, pour mobile : rendue image par image depuis la
 // vraie scène 3D (même code), puis encodée en WebM (VP9) et MP4 (H.264).
-// Produit aussi l'image « zoom » (gobelet en gros plan) et les repères du slogan.
+// Produit aussi l'image « zoom » (gobelet en gros plan) et les repères du dialogue
+// (position des têtes au fil de la boucle).
 // Prérequis : serveur de dev lancé (BASE_URL, défaut http://localhost:3000) et ffmpeg.
 // Usage : node scripts/render-hero-video.mjs
 import chromium from "@sparticuz/chromium";
@@ -42,8 +43,17 @@ const seek = (t) =>
 const total = FPS * LOOP;
 // courte chauffe pour stabiliser les états intégrés (foulée, respiration)
 for (let i = total - 24; i < total; i++) await seek(i / FPS);
+// repères du dialogue : au-dessus des têtes, 8 fois par seconde (interpolés côté page)
+const TRACK_EVERY = 3;
+const r3 = (n) => Math.round(n * 1000) / 1000;
+const talk = { fps: FPS / TRACK_EVERY, customer: [], barista: [] };
 for (let i = 0; i < total; i++) {
   await seek(i / FPS);
+  if (i % TRACK_EVERY === 0) {
+    const h = await page.evaluate(() => window.__doka.projectHeads());
+    talk.customer.push([r3(h.customer.x), r3(h.customer.y), r3(h.customer.o)]);
+    talk.barista.push([r3(h.barista.x), r3(h.barista.y)]);
+  }
   await page.screenshot({ path: path.join(frames, `f${String(i).padStart(4, "0")}.png`), timeout: 120000 });
   if (i % 48 === 0) console.log(`image ${i}/${total}`);
 }
@@ -67,7 +77,7 @@ execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", String(FPS), "
 execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", String(FPS), "-i", input, "-c:v", "libx264", "-preset", "veryfast", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", path.join(OUT, "hero-takeaway.mp4")]);
 await writeFile(
   path.join(OUT, "hero-takeaway.json"),
-  JSON.stringify({ width: W, height: H, fps: FPS, loop: LOOP, handoff }, null, 2) + "\n",
+  JSON.stringify({ width: W, height: H, fps: FPS, loop: LOOP, handoff, talk }) + "\n",
 );
 await rm(frames, { recursive: true });
 console.log("✓ public/videos/hero-takeaway.{webm,mp4,json}, public/images/doka/hero-zoom-mobile.webp", handoff);

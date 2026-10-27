@@ -21,6 +21,11 @@ const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
 const EASE_IN = "cubic-bezier(0.55, 0, 1, 0.45)";
 /** Hauteur des bords arrondis de la nappe (dépassent en haut et en bas). */
 const LIP = "18vh";
+/**
+ * Au-delà, la page n'arrive pas : navigation classique. En développement, chaque page est
+ * compilée à sa première visite (plusieurs secondes) : on patiente bien plus longtemps.
+ */
+const FAILSAFE = process.env.NODE_ENV === "development" ? 30000 : 8000;
 
 /** Nom de la page d'arrivée, affiché sous le logo pendant la transition. */
 function labelFor(pathname: string) {
@@ -175,7 +180,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
           // la page tarde : le nom de la page respire doucement en attendant
           waiting.current = window.setTimeout(() => label.current?.classList.add("is-waiting"), 900);
           // filet de sécurité : si la page n'arrive pas, navigation classique
-          failsafe.current = window.setTimeout(() => window.location.assign(nextTarget.current), 8000);
+          failsafe.current = window.setTimeout(() => window.location.assign(nextTarget.current), FAILSAFE);
         },
         () => {},
       );

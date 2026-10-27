@@ -14,12 +14,20 @@ import { LOOP, HANDOFF_AT, HANDOFF_HERO, RELEASE_AT } from "./timing";
 
 export type SceneQuality = "high" | "low";
 
+/** Point écran au-dessus de la tête d'un personnage ; `o` = opacité (le client s'efface en sortant). */
+export type HeadPoint = { x: number; y: number; o: number };
+
 export type FrameInfo = {
   /** Position écran (px, relatif au canvas) du gobelet. */
   cupX: number;
   cupY: number;
   /** Progression du zoom scroll (0 → 1). */
   zoom: number;
+  /** Temps dans la boucle (s, 0 → LOOP) : synchronise le dialogue. */
+  time: number;
+  /** Au-dessus de la tête du client et du barista (px, relatif au canvas) : ancrage des bulles. */
+  customer: HeadPoint;
+  barista: HeadPoint;
 };
 
 export type SceneOptions = {
@@ -36,6 +44,8 @@ export type TakeawayScene = {
   seek: (t: number, dt?: number) => void;
   /** Position normalisée (0–1) du gobelet dans le cadre courant. */
   project: () => { x: number; y: number };
+  /** Positions normalisées (0–1) au-dessus des têtes (enregistrement vidéo du dialogue). */
+  projectHeads: () => { customer: HeadPoint; barista: HeadPoint };
   setPointer: (nx: number, ny: number) => void;
   setScroll: (p: number) => void;
   setActive: (active: boolean) => void;
@@ -250,6 +260,13 @@ export function createTakeawayScene(canvas: HTMLCanvasElement, opts: SceneOption
   const tmpC = new THREE.Vector3();
   const tmpT = new THREE.Vector3();
   const ZOOM_LIFT = new THREE.Vector3(0, 0.22, 0);
+  const HEAD_TOP = new THREE.Vector3(0, 0.3, 0);
+  const tmpHead = new THREE.Vector3();
+  /** Point normalisé (0–1) au-dessus de la tête d'un personnage, dans le cadre courant. */
+  function headPoint(p: typeof customer): HeadPoint {
+    p.head.getWorldPosition(tmpHead).add(HEAD_TOP).project(camera);
+    return { x: tmpHead.x * 0.5 + 0.5, y: -tmpHead.y * 0.5 + 0.5, o: p.state.opacity };
+  }
   let width = 1;
   let height = 1;
   let baseDistance = 18;
@@ -421,7 +438,16 @@ export function createTakeawayScene(canvas: HTMLCanvasElement, opts: SceneOption
     if (!halfRate || tick % 2 === 0) renderer.render(scene, camera);
     if (opts.onFrame) {
       tmp.copy(cupWorld).project(camera);
-      opts.onFrame({ cupX: (tmp.x * 0.5 + 0.5) * width, cupY: (-tmp.y * 0.5 + 0.5) * height, zoom: z });
+      const c = headPoint(customer);
+      const b = headPoint(barista);
+      opts.onFrame({
+        cupX: (tmp.x * 0.5 + 0.5) * width,
+        cupY: (-tmp.y * 0.5 + 0.5) * height,
+        zoom: z,
+        time: tl.time(),
+        customer: { x: c.x * width, y: c.y * height, o: c.o },
+        barista: { x: b.x * width, y: b.y * height, o: b.o },
+      });
     }
   }
 
@@ -480,6 +506,9 @@ export function createTakeawayScene(canvas: HTMLCanvasElement, opts: SceneOption
     project() {
       tmp.copy(cupWorld).project(camera);
       return { x: tmp.x * 0.5 + 0.5, y: -tmp.y * 0.5 + 0.5 };
+    },
+    projectHeads() {
+      return { customer: headPoint(customer), barista: headPoint(barista) };
     },
     setPointer(nx, ny) {
       pointer.x = THREE.MathUtils.clamp(nx, -1, 1);
