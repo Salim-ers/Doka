@@ -40,10 +40,10 @@ export function FullscreenMenu({ open, onClose, pathname }: Props) {
           .fromTo(
             el,
             { clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" },
-            { clipPath: "circle(150% at calc(100% - 3rem) 2.5rem)", duration: 0.7, ease: "doka.inOut" },
+            { clipPath: "circle(150% at calc(100% - 3rem) 2.5rem)", duration: 0.5, ease: "doka.inOut" },
           )
-          .fromTo(links, { yPercent: 110 }, { yPercent: 0, duration: 0.7, stagger: 0.05, ease: "doka.out" }, 0.22)
-          .fromTo(meta, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.06 }, 0.45);
+          .fromTo(links, { yPercent: 110 }, { yPercent: 0, duration: 0.55, stagger: 0.04, ease: "doka.out" }, 0.12)
+          .fromTo(meta, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.05 }, 0.3);
       }
       const first = el.querySelector<HTMLElement>("[data-autofocus]");
       requestAnimationFrame(() => first?.focus());
@@ -54,7 +54,7 @@ export function FullscreenMenu({ open, onClose, pathname }: Props) {
       } else {
         tl.current = gsap
           .timeline({ onComplete: () => void gsap.set(el, { visibility: "hidden" }) })
-          .to(el, { clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)", duration: 0.5, ease: "doka.inOut" });
+          .to(el, { clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)", duration: 0.35, ease: "doka.inOut" });
       }
     }
     return () => {

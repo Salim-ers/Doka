@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { gsap, useGSAP, SplitText } from "@/lib/gsap";
+import { entranceDelay } from "@/lib/entrance";
 import { bringYourOwnCup, drinkOptions, formatPrice, productsBySlug, type Product } from "@/data/products";
 import { sectionOf } from "@/data/categories";
 import { siteConfig } from "@/data/site-config";
@@ -39,15 +40,15 @@ export function ProductDetail({ product }: { product: Product }) {
           : null;
         root.current?.querySelectorAll("[data-reveal='hero']").forEach((n) => n.removeAttribute("data-reveal"));
         gsap
-          .timeline({ delay: 0.1 })
+          .timeline({ delay: 0.05 + entranceDelay() })
           .fromTo(
             ".pd-visual",
             { clipPath: "circle(8% at 50% 50%)", scale: 0.92 },
-            { clipPath: "circle(80% at 50% 50%)", scale: 1, duration: 1.3, ease: "doka.inOut" },
+            { clipPath: "circle(80% at 50% 50%)", scale: 1, duration: 0.9, ease: "doka.inOut" },
             0,
           )
-          .from(split?.chars ?? [], { yPercent: 115, rotate: 6, duration: 0.9, stagger: 0.025, ease: "doka.pop" }, 0.25)
-          .from(".pd-meta > *, .pd-body > *", { y: 24, autoAlpha: 0, duration: 0.7, stagger: 0.06 }, 0.45);
+          .from(split?.chars ?? [], { yPercent: 115, rotate: 6, duration: 0.7, stagger: 0.02, ease: "doka.pop" }, 0.15)
+          .from(".pd-meta > *, .pd-body > *", { y: 24, autoAlpha: 0, duration: 0.55, stagger: 0.05 }, 0.3);
         gsap.from(".pd-suggest .pcard", {
           y: 50,
           autoAlpha: 0,

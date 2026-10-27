@@ -482,17 +482,26 @@ body:has(.site-header[data-hidden]) .mb-tabs {
   box-shadow: 0 0 0 1px var(--line);
 }
 .fav-empty__cup {
+  position: relative;
+  display: block;
   width: 110px;
-  height: auto;
   color: var(--ink);
 }
-.fav-empty__dot {
-  transform-origin: 100px 140px;
+.fav-empty__cup svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* repère 200 × 240 : le point (100, 140) est à 50 % / 58,3 % ; 34 unités ≈ 14,2 % */
+.fav-empty__cup .fav-empty__dot {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 58.3%;
   animation: dot-bob 2.6s var(--ease-in-out) infinite;
 }
 @keyframes dot-bob {
   50% {
-    transform: translateY(-34px) scale(0.85);
+    transform: translateY(-14.2%) scale(0.85);
   }
 }
 .fav-empty__title {
@@ -1107,6 +1116,7 @@ body:has(.site-header[data-hidden]) .mb-tabs {
   font-size: 0.95rem;
 }
 .open-status__dot {
+  position: relative;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -1114,7 +1124,14 @@ body:has(.site-header[data-hidden]) .mb-tabs {
 }
 .open-status[data-open] .open-status__dot {
   background: #9cd04a;
-  box-shadow: 0 0 0 0 rgb(156 208 74 / 0.6);
+}
+/* onde autour du point : un anneau qui grandit et s'efface (transform + opacity, sans repeindre) */
+.open-status[data-open] .open-status__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgb(156 208 74 / 0.6);
   animation: pulse 2s infinite;
 }
 .open-status--idle {
@@ -1123,8 +1140,14 @@ body:has(.site-header[data-hidden]) .mb-tabs {
   padding: 0;
 }
 @keyframes pulse {
-  70% {
-    box-shadow: 0 0 0 10px rgb(156 208 74 / 0);
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: scale(3);
+    opacity: 0;
   }
 }
 .loc-hours {

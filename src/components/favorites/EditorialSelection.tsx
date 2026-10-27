@@ -30,31 +30,31 @@ export function EditorialSelection() {
             tl.fromTo(
               visual,
               { clipPath: "inset(0 0 100% 0 round 2.2rem)" },
-              { clipPath: "inset(0 0 0% 0 round 2.2rem)", duration: 1.2, ease: "doka.inOut" },
+              { clipPath: "inset(0 0 0% 0 round 2.2rem)", duration: 0.9, ease: "doka.inOut" },
             );
           } else if (kind === "swirl") {
             tl.fromTo(
               visual,
               { clipPath: "circle(0% at 50% 50%)", rotate: -6 },
-              { clipPath: "circle(80% at 50% 50%)", rotate: 0, duration: 1.3, ease: "doka.inOut" },
+              { clipPath: "circle(80% at 50% 50%)", rotate: 0, duration: 0.95, ease: "doka.inOut" },
             );
           } else if (kind === "open") {
             tl.fromTo(
               visual,
               { clipPath: "inset(0 50% 0 50% round 2.2rem)" },
-              { clipPath: "inset(0 0% 0 0% round 2.2rem)", duration: 1.2, ease: "doka.inOut" },
+              { clipPath: "inset(0 0% 0 0% round 2.2rem)", duration: 0.9, ease: "doka.inOut" },
             );
           } else {
             tl.fromTo(
               visual,
-              { scale: 0.6, autoAlpha: 0, borderRadius: "50%" },
-              { scale: 1, autoAlpha: 1, borderRadius: "2.2rem", duration: 1.2, ease: "doka.pop" },
+              { scale: 0.6, autoAlpha: 0 },
+              { scale: 1, autoAlpha: 1, duration: 0.9, ease: "doka.pop" },
             );
           }
           tl.from(
             item.querySelectorAll(".sel-item__body > *"),
-            { y: 34, autoAlpha: 0, stagger: 0.08, duration: 0.8 },
-            0.3,
+            { y: 34, autoAlpha: 0, stagger: 0.07, duration: 0.6 },
+            0.25,
           );
         });
       });

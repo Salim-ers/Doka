@@ -47,17 +47,22 @@ export function FavoritesBoard() {
 
       {count === 0 ? (
         <div className="fav-empty">
-          <svg className="fav-empty__cup" viewBox="0 0 200 240" aria-hidden="true">
-            <path
-              d="M40 60h120l-14 160a12 12 0 0 1-12 11H66a12 12 0 0 1-12-11z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="8"
-              strokeLinejoin="round"
-            />
-            <rect x="28" y="38" width="144" height="26" rx="13" fill="none" stroke="currentColor" strokeWidth="8" />
-            <circle className="fav-empty__dot" cx="100" cy="140" r="16" fill="var(--orange)" />
-          </svg>
+          <span className="fav-empty__cup" aria-hidden="true">
+            <svg viewBox="0 0 200 240">
+              <path
+                d="M40 60h120l-14 160a12 12 0 0 1-12 11H66a12 12 0 0 1-12-11z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="8"
+                strokeLinejoin="round"
+              />
+              <rect x="28" y="38" width="144" height="26" rx="13" fill="none" stroke="currentColor" strokeWidth="8" />
+            </svg>
+            {/* point superposé, animé par la carte graphique */}
+            <svg className="fav-empty__dot" viewBox="0 0 200 240">
+              <circle cx="100" cy="140" r="16" fill="var(--orange)" />
+            </svg>
+          </span>
           <p className="fav-empty__title display">rien ici, pour l&apos;instant.</p>
           <p className="fav-empty__text">
             Touche le cœur d&apos;une boisson sur la carte ou sur sa fiche : elle t&apos;attendra ici, sur ce

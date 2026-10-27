@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Copy, Check, MapPin, Navigation } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { entranceDelay } from "@/lib/entrance";
 import { formatHour, siteConfig } from "@/data/site-config";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { InstagramGlyph } from "@/components/ui/icons";
@@ -26,17 +27,17 @@ export function LocationCard() {
           y: 60,
           autoAlpha: 0,
           rotate: (i: number) => [-2, 1.5, -1][i] ?? 0,
-          stagger: 0.1,
-          duration: 1,
+          stagger: 0.08,
+          duration: 0.8,
           ease: "doka.out",
-          delay: 0.3,
+          delay: 0.1 + entranceDelay(),
         });
         gsap.fromTo(
           ".map",
           { clipPath: "circle(4% at 50% 50%)" },
           {
             clipPath: "circle(80% at 50% 50%)",
-            duration: 1.4,
+            duration: 1,
             ease: "doka.inOut",
             scrollTrigger: { trigger: ".map", start: "top 92%", once: true },
           },

@@ -13,9 +13,14 @@ const TransitionContext = createContext<Ctx>({ navigate: () => {} });
 
 export const usePageTransition = () => useContext(TransitionContext);
 
+/** Montée de la nappe (ms). Elle bouge dès le clic : aucune impression d'attente. */
+const COVER = 360;
 /** Durée minimale (ms) de couverture : le logo a fini de se poser avant de s'envoler. */
-const MIN_COVER = 700;
-const EASE_IN_OUT = "cubic-bezier(0.65, 0, 0.35, 1)";
+const MIN_COVER = 440;
+/** Départ de la nappe (ms). */
+const UNCOVER = 460;
+const EASE_COVER = "cubic-bezier(0.3, 0, 0.15, 1)";
+const EASE_UNCOVER = "cubic-bezier(0.55, 0, 0.15, 1)";
 const EASE_POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
 const EASE_IN = "cubic-bezier(0.55, 0, 1, 0.45)";
@@ -110,17 +115,17 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
           { transform: "translateY(-60%)", opacity: 0 },
         ],
         {
-          duration: 260,
-          delay: i * 30,
+          duration: 200,
+          delay: i * 22,
           easing: EASE_IN,
         },
       ),
     );
-    play(label.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: EASE_IN });
+    play(label.current, [{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: EASE_IN });
     const out = play(
       panel.current,
       [{ transform: "translateY(0)" }, { transform: `translateY(calc(-100% - ${LIP}))` }],
-      { duration: 600, delay: 90, easing: EASE_IN_OUT },
+      { duration: UNCOVER, delay: 30, easing: EASE_UNCOVER },
     );
     if (out) out.finished.then(finish, finish);
     else finish();
@@ -140,7 +145,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
         ScrollTrigger.refresh();
         requestAnimationFrame(reveal);
       },
-      Math.max(60, MIN_COVER - (performance.now() - startedAt.current)),
+      Math.max(40, MIN_COVER - (performance.now() - startedAt.current)),
     );
   }, [reveal]);
 
@@ -184,7 +189,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       router.prefetch(target);
       if (label.current) label.current.textContent = labelFor(url.pathname);
 
-      /** Lance la navigation une seule fois : à la fin de la montée de la nappe, ou au plus tard après 700 ms. */
+      /** Lance la navigation une seule fois : à la fin de la montée de la nappe, ou au plus tard juste après. */
       const go = () => {
         // (pas de navigation si elle a été abandonnée entre-temps, ex. bouton précédent)
         if (pushed.current || !busy.current || !pending.current) return;
@@ -203,12 +208,12 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
         const cover = play(
           panel.current,
           [{ transform: `translateY(calc(100% + ${LIP}))` }, { transform: "translateY(0)" }],
-          { duration: 520, easing: EASE_IN_OUT },
+          { duration: COVER, easing: EASE_COVER },
         );
         letters().forEach((l, i) =>
           play(l, [{ transform: "translateY(115%)" }, { transform: "translateY(0)" }], {
-            duration: 440,
-            delay: 160 + i * 40,
+            duration: 300,
+            delay: 60 + i * 26,
             easing: EASE_POP,
           }),
         );
@@ -219,13 +224,13 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
             { opacity: 1, transform: "none" },
           ],
           {
-            duration: 300,
-            delay: 320,
+            duration: 220,
+            delay: 170,
             easing: EASE_OUT,
           },
         );
         if (cover) cover.finished.then(go, go);
-        window.setTimeout(go, 700);
+        window.setTimeout(go, COVER + 120);
       } catch {
         // animation impossible sur ce navigateur : navigation directe, rien ne reste bloqué
         finish();

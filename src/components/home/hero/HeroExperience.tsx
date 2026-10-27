@@ -237,6 +237,11 @@ export function HeroExperience() {
       );
       return { x: media.offsetLeft + local.x, y: media.offsetTop + local.y };
     };
+    // Les bulles suivent la vidéo à son rythme (une mise à jour par image de la vidéo, pas
+    // par rafraîchissement de l'écran, souvent 2 à 4 fois plus fréquent)
+    const perFrame = typeof v.requestVideoFrameCallback === "function";
+    const next = () => (raf = perFrame ? v.requestVideoFrameCallback(loop) : requestAnimationFrame(loop));
+    const stop = () => (perFrame ? v.cancelVideoFrameCallback(raf) : cancelAnimationFrame(raf));
     const loop = () => {
       const t = v.currentTime;
       const { talk } = videoMeta;
@@ -247,15 +252,15 @@ export function HeroExperience() {
         { customer: { ...toStage(cx, cy), o: co }, barista: { ...toStage(bx, by), o: 1 } },
         !zoomLocked.current,
       );
-      raf = requestAnimationFrame(loop);
+      next();
     };
     const onPlaying = () => {
       stage.setAttribute("data-playing", "");
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(loop);
+      stop();
+      next();
     };
     const onPause = () => {
-      cancelAnimationFrame(raf);
+      stop();
       // vidéo en pause (zoom au scroll, hors écran) : plus de bulle
       updateTalk(0, null, false);
     };
@@ -272,7 +277,7 @@ export function HeroExperience() {
       /* lecture automatique refusée : le poster reste affiché */
     });
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
       io.disconnect();
       v.removeEventListener("playing", onPlaying);
       v.removeEventListener("pause", onPause);
@@ -326,36 +331,36 @@ export function HeroExperience() {
         gsap
           .timeline({ delay })
           // la scène ne passe jamais par l'opacité 0 : le poster reste l'élément LCP, peint au plus tôt
-          .from(".hero__stage", { scale: 0.96, y: 30, duration: 1.3, ease: "doka.out" }, 0)
-          .from(".hero__bglogo", { autoAlpha: 0, scale: 1.08, duration: 1.6, ease: "doka.out" }, 0)
-          .from(".hero__kicker", { autoAlpha: 0, y: 14, duration: 0.6 }, 0.1)
-          .from(split.chars, { yPercent: 115, duration: 0.9, stagger: 0.022, ease: "doka.out" }, 0.15)
-          .from(".hero__lead", { autoAlpha: 0, y: 18, duration: 0.7 }, 0.55)
-          .from(".hero__ctas > *", { autoAlpha: 0, y: 18, stagger: 0.08, duration: 0.6 }, 0.65)
-          .from(".hero__sticker", { autoAlpha: 0, scale: 0, rotate: -40, duration: 0.8, ease: "doka.pop" }, 0.85)
+          .from(".hero__stage", { scale: 0.96, y: 30, duration: 1, ease: "doka.out" }, 0)
+          .from(".hero__bglogo", { autoAlpha: 0, scale: 1.08, duration: 1.2, ease: "doka.out" }, 0)
+          .from(".hero__kicker", { autoAlpha: 0, y: 14, duration: 0.5 }, 0.08)
+          .from(split.chars, { yPercent: 115, duration: 0.75, stagger: 0.018, ease: "doka.out" }, 0.12)
+          .from(".hero__lead", { autoAlpha: 0, y: 18, duration: 0.55 }, 0.4)
+          .from(".hero__ctas > *", { autoAlpha: 0, y: 18, stagger: 0.07, duration: 0.5 }, 0.48)
+          .from(".hero__sticker", { autoAlpha: 0, scale: 0, rotate: -40, duration: 0.7, ease: "doka.pop" }, 0.65)
           .from(
             ".hero__badge",
             {
               autoAlpha: 0,
               scale: 0,
               rotate: (i: number) => (i % 2 ? 30 : -30),
-              duration: 0.8,
-              stagger: 0.09,
+              duration: 0.7,
+              stagger: 0.08,
               ease: "doka.pop",
             },
-            0.5,
+            0.38,
           )
-          .from(".hero__scroll", { autoAlpha: 0, y: -10, duration: 0.6 }, 1);
+          .from(".hero__scroll", { autoAlpha: 0, y: -10, duration: 0.5 }, 0.8);
 
-        // Les pastilles flottent doucement, chacune à son rythme
+        // Les pastilles flottent doucement, chacune à son rythme. Propriété `translate` animée
+        // par le navigateur lui-même (carte graphique) : aucun travail par image pour la page.
         const floats = gsap.utils.toArray<HTMLElement>(".hero__badge", el).map((b, i) =>
-          gsap.to(b, {
-            y: i % 2 ? 7 : -7,
-            duration: 2.4 + i * 0.35,
-            ease: "sine.inOut",
-            yoyo: true,
-            repeat: -1,
-            delay: delay + 1.4,
+          b.animate([{ translate: "0 0" }, { translate: `0 ${i % 2 ? 7 : -7}px` }], {
+            duration: (2.4 + i * 0.35) * 1000,
+            delay: (delay + 1.1) * 1000,
+            easing: "ease-in-out",
+            direction: "alternate",
+            iterations: Infinity,
           }),
         );
 
@@ -388,7 +393,27 @@ export function HeroExperience() {
           }
         };
 
+        // La nappe part du gobelet. Sa position n'est suivie (à chaque image) qu'à l'approche de
+        // la nappe, et n'est écrite que si elle a bougé : le reste du temps, aucun travail par image.
         const flood = floodRef.current;
+        let lastCx = "";
+        let lastCy = "";
+        const syncFlood = () => {
+          if (!flood) return;
+          const { x, y } = cupScreen.current;
+          const box = stageRef.current?.getBoundingClientRect();
+          const cx = `${Math.round((box?.left ?? 0) + (x || window.innerWidth * 0.62 - (box?.left ?? 0)))}px`;
+          const cy = `${Math.round((box?.top ?? 0) + (y || window.innerHeight * 0.55 - (box?.top ?? 0)))}px`;
+          if (cx !== lastCx) flood.style.setProperty("--cx", (lastCx = cx));
+          if (cy !== lastCy) flood.style.setProperty("--cy", (lastCy = cy));
+        };
+        let tracking = false;
+        const trackFlood = (on: boolean) => {
+          if (on === tracking) return;
+          tracking = on;
+          if (on) gsap.ticker.add(syncFlood);
+          else gsap.ticker.remove(syncFlood);
+        };
         const st = gsap
           .timeline({
             scrollTrigger: {
@@ -399,7 +424,9 @@ export function HeroExperience() {
               onUpdate: (self) => {
                 sceneRef.current?.setScroll(self.progress);
                 setVideoScroll(self.progress);
+                trackFlood(self.isActive && self.progress > 0.6);
               },
+              onToggle: (self) => trackFlood(self.isActive && self.progress > 0.6),
             },
           })
           .to(".hero__copy", { yPercent: -18, autoAlpha: 0, ease: "none", duration: 0.32 }, 0)
@@ -413,20 +440,9 @@ export function HeroExperience() {
             { clipPath: "circle(150% at var(--cx) var(--cy))", ease: "power2.in", duration: 0.22 },
             0.78,
           );
-        // la nappe part du gobelet
-        const syncFlood = () => {
-          if (!flood) return;
-          const { x, y } = cupScreen.current;
-          const box = stageRef.current?.getBoundingClientRect();
-          const cx = (box?.left ?? 0) + (x || window.innerWidth * 0.62 - (box?.left ?? 0));
-          const cy = (box?.top ?? 0) + (y || window.innerHeight * 0.55 - (box?.top ?? 0));
-          flood.style.setProperty("--cx", `${cx}px`);
-          flood.style.setProperty("--cy", `${cy}px`);
-        };
-        gsap.ticker.add(syncFlood);
         return () => {
-          floats.forEach((t) => t.kill());
-          gsap.ticker.remove(syncFlood);
+          floats.forEach((a) => a.cancel());
+          trackFlood(false);
           st.scrollTrigger?.kill();
           st.kill();
           split.revert();

@@ -59,9 +59,9 @@ export function AnimatedHeading({
             anim = gsap.from(targets, {
               yPercent: mode === "chars" ? 120 : 108,
               rotate: mode === "chars" ? (i: number) => (i % 2 ? 8 : -8) : 0,
-              duration: mode === "chars" ? 0.9 : 1.05,
+              duration: mode === "chars" ? 0.7 : 0.85,
               ease: mode === "chars" ? "doka.pop" : "doka.out",
-              stagger: mode === "chars" ? 0.025 : mode === "words" ? 0.05 : 0.09,
+              stagger: mode === "chars" ? 0.02 : mode === "words" ? 0.04 : 0.07,
               delay: immediate ? delay + entranceDelay() : delay,
               scrollTrigger: immediate ? undefined : { trigger: el, start, once: true },
             });

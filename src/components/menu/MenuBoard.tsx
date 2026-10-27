@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Plus } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { entranceDelay } from "@/lib/entrance";
 import { menuFilters, menuSections } from "@/data/categories";
 import { bringYourOwnCup, drinkOptions, formatPrice, products } from "@/data/products";
 import { DLink } from "@/components/ui/DLink";
@@ -86,9 +87,9 @@ export function MenuBoard() {
         gsap.from(".mb-row, .mb-section__title, .mb-options", {
           y: 26,
           autoAlpha: 0,
-          duration: 0.7,
-          stagger: 0.03,
-          delay: 0.2,
+          duration: 0.6,
+          stagger: 0.025,
+          delay: 0.1 + entranceDelay(),
           ease: "doka.out",
         });
       });

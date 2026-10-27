@@ -323,38 +323,45 @@
   filter: drop-shadow(0 14px 18px rgb(23 23 20 / 0.25));
 }
 .doka-cup {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.doka-cup svg {
   display: block;
   width: 100%;
   height: 100%;
   overflow: visible;
 }
-.doka-cup__steam {
+/* volutes superposées au gobelet (même repère 200 × 250) ; 4 % de la hauteur ≈ 10 unités */
+.doka-cup .doka-cup__steam {
+  position: absolute;
+  inset: 0;
   color: #ffb199;
-}
-.doka-cup__steam path {
   animation: cup-steam 2.6s var(--ease-in-out) infinite;
 }
-.doka-cup__steam path:nth-child(2) {
+.doka-cup__steam:nth-child(2) {
   animation-delay: 0.5s;
 }
-.doka-cup__steam path:nth-child(3) {
+.doka-cup__steam:nth-child(3) {
   animation-delay: 1s;
 }
 @keyframes cup-steam {
   0% {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(4%);
   }
   40% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(-4.8%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .doka-cup__steam path {
+  .doka-cup .doka-cup__steam {
     animation: none;
   }
 }
@@ -389,6 +396,9 @@
   }
 }
 .hero__flood {
+  /* centre de la nappe, suivi du gobelet à l'approche (HeroExperience) */
+  --cx: 60%;
+  --cy: 55%;
   position: absolute;
   inset: 0;
   z-index: 6;
