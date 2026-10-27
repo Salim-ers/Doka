@@ -2,7 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Plus } from "lucide-react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap } from "@/lib/gsap";
 import { entranceDelay } from "@/lib/entrance";
 import { menuFilters, menuSections } from "@/data/categories";
 import { bringYourOwnCup, drinkOptions, formatPrice, products } from "@/data/products";
@@ -47,6 +47,8 @@ export function MenuBoard() {
     (id: string) => {
       if (id === filter) return;
       changed.current = true;
+      // l'apparition initiale s'arrête : la cascade du filtre prend le relais
+      root.current?.removeAttribute("data-enter");
       setOpen(null);
       const url = new URL(window.location.href);
       if (id === "all") url.searchParams.delete("categorie");
@@ -79,24 +81,19 @@ export function MenuBoard() {
     );
   }, [filter]);
 
-  // Apparition initiale des lignes
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".mb-row, .mb-section__title, .mb-options", {
-          y: 26,
-          autoAlpha: 0,
-          duration: 0.6,
-          stagger: 0.025,
-          delay: 0.1 + entranceDelay(),
-          ease: "doka.out",
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+  // Apparition initiale des lignes, en CSS (data-enter, décalage --i par ligne) : le navigateur
+  // l'anime seul, rien à préparer ligne par ligne à l'arrivée sur la page. Elle démarre quand la
+  // nappe de transition ou l'écran de chargement s'ouvre.
+  useLayoutEffect(() => {
+    const el = root.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.style.setProperty("--mb-delay", `${(0.1 + entranceDelay()).toFixed(2)}s`);
+    el.setAttribute("data-enter", "");
+  }, []);
+
+  // rang de chaque élément affiché dans la cascade d'apparition
+  let rank = 0;
+  const cascade = (shown: boolean) => (shown ? ({ "--i": rank++ } as React.CSSProperties) : undefined);
 
   const active = menuFilters.find((f) => f.id === filter) ?? menuFilters[0];
   const showOptions = filter === "all" || filter === "options";
@@ -123,21 +120,17 @@ export function MenuBoard() {
         </p>
         {menuSections.map((section) => {
           const items = products.filter((p) => p.family === section.family);
+          const shown = sectionVisible(section.id);
           return (
-            <section
-              key={section.id}
-              className="mb-section"
-              hidden={!sectionVisible(section.id)}
-              aria-labelledby={`mb-${section.id}`}
-            >
-              <h2 id={`mb-${section.id}`} className="mb-section__title display">
+            <section key={section.id} className="mb-section" hidden={!shown} aria-labelledby={`mb-${section.id}`}>
+              <h2 id={`mb-${section.id}`} className="mb-section__title display" style={cascade(shown)}>
                 {section.title}
               </h2>
               <ul className="mb-list">
                 {items.map((p) => {
                   const isOpen = open === p.slug;
                   return (
-                    <li key={p.slug} className="mb-row" data-open={isOpen ? "" : undefined}>
+                    <li key={p.slug} className="mb-row" data-open={isOpen ? "" : undefined} style={cascade(shown)}>
                       <div className="mb-row__line">
                         <div className="mb-row__thumb" aria-hidden="true">
                           <ProductVisual product={p} sizes="80px" thumb />
@@ -184,17 +177,19 @@ export function MenuBoard() {
         })}
 
         <section className="mb-options" hidden={!showOptions} aria-labelledby="mb-options">
-          <h2 id="mb-options" className="mb-section__title display">
+          <h2 id="mb-options" className="mb-section__title display" style={cascade(showOptions)}>
             options
           </h2>
           <div className="mb-options__grid">
             <div className="mb-options__col">
-              <h3 className="mb-options__h">Sans supplément</h3>
+              <h3 className="mb-options__h" style={cascade(showOptions)}>
+                Sans supplément
+              </h3>
               <ul className="mb-list">
                 {drinkOptions
                   .filter((o) => o.price === 0)
                   .map((o) => (
-                    <li key={o.id} className="mb-row mb-row--static">
+                    <li key={o.id} className="mb-row mb-row--static" style={cascade(showOptions)}>
                       <div className="mb-row__line">
                         <span className="mb-row__name">{o.label}</span>
                         <span className="mb-row__leader" aria-hidden="true" />
@@ -205,12 +200,14 @@ export function MenuBoard() {
               </ul>
             </div>
             <div className="mb-options__col">
-              <h3 className="mb-options__h">Suppléments</h3>
+              <h3 className="mb-options__h" style={cascade(showOptions)}>
+                Suppléments
+              </h3>
               <ul className="mb-list">
                 {drinkOptions
                   .filter((o) => o.price > 0)
                   .map((o) => (
-                    <li key={o.id} className="mb-row mb-row--static">
+                    <li key={o.id} className="mb-row mb-row--static" style={cascade(showOptions)}>
                       <div className="mb-row__line">
                         <span className="mb-row__name">{o.label}</span>
                         <span className="mb-row__leader" aria-hidden="true" />
@@ -221,7 +218,7 @@ export function MenuBoard() {
               </ul>
             </div>
           </div>
-          <p className="mb-byoc">
+          <p className="mb-byoc" style={cascade(showOptions)}>
             <span className="mb-byoc__stamp price">{formatPrice(-bringYourOwnCup.discount)}</span>
             <span>
               <strong>{bringYourOwnCup.label}.</strong> Ton propre gobelet, et ta boisson coûte{" "}

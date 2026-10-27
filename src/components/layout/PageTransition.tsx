@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ScrollTrigger } from "@/lib/gsap";
 import { setCurtainCovering } from "@/lib/entrance";
@@ -42,9 +42,11 @@ function labelFor(pathname: string) {
 
 /**
  * Transition Doka, à chaque navigation interne :
- * 1. une nappe orange monte du bas de l'écran, bord supérieur arrondi ;
+ * 1. une nappe orange monte du bas de l'écran, bord supérieur arrondi, pendant que le contenu
+ *    de la page quittée s'efface en fondu ;
  * 2. les quatre lettres du logo se posent une à une, avec le nom de la page d'arrivée ;
- * 3. la page change sous la nappe, puis les lettres s'envolent et la nappe repart par le haut.
+ * 3. la nouvelle page se construit dès le clic, pendant la montée ; une fois l'écran couvert,
+ *    les lettres s'envolent et la nappe repart par le haut.
  * Tout est animé en `transform` / `opacity` avec l'API Web Animations : le compositeur du
  * navigateur fait tourner l'animation même pendant que la nouvelle page se construit
  * (aucune saccade sur un téléphone modeste). Le travail lourd (rendu, recalcul des
@@ -73,6 +75,7 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
   const revealing = useRef(false);
   const fromPath = useRef("");
   const anims = useRef<Animation[]>([]);
+  const coverAnim = useRef<Animation | null>(null);
 
   const play = (el: Element | null, frames: Keyframe[], options: KeyframeAnimationOptions) => {
     if (!el) return null;
@@ -90,6 +93,8 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     window.clearTimeout(grace.current);
     anims.current.forEach((a) => a.cancel());
     anims.current = [];
+    coverAnim.current = null;
+    document.documentElement.removeAttribute("data-leaving");
     label.current?.classList.remove("is-waiting");
     if (el) el.style.visibility = "hidden";
     busy.current = false;
@@ -106,6 +111,8 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     window.clearTimeout(grace.current);
     // filet : quoi qu'il arrive à l'animation, la nappe disparaît
     safety.current = window.setTimeout(finish, 1400);
+    // la nappe couvre tout l'écran : le contenu, effacé au départ, revient dessous
+    document.documentElement.removeAttribute("data-leaving");
     label.current?.classList.remove("is-waiting");
     letters().forEach((l, i) =>
       play(
@@ -125,27 +132,35 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     const out = play(
       panel.current,
       [{ transform: "translateY(0)" }, { transform: `translateY(calc(-100% - ${LIP}))` }],
-      { duration: UNCOVER, delay: 30, easing: EASE_UNCOVER },
+      { duration: UNCOVER, easing: EASE_UNCOVER },
     );
     if (out) out.finished.then(finish, finish);
     else finish();
   }, [finish]);
 
-  /** Arrivée sur la nouvelle page (sous la nappe) : défilement, recalcul, puis levée de la nappe. */
+  /**
+   * Arrivée sur la nouvelle page (souvent pendant que la nappe monte encore) : dès que la nappe
+   * couvre tout l'écran et que le logo est posé, défilement, recalcul, puis levée de la nappe.
+   */
   const arrive = useCallback(() => {
     window.clearTimeout(failsafe.current);
     window.clearTimeout(grace.current);
-    const hash = decodeURIComponent(window.location.hash.slice(1));
-    const anchor = hash ? document.getElementById(hash) : null;
-    if (anchor) anchor.scrollIntoView();
-    else window.scrollTo(0, 0);
+    const settle = () => {
+      const hash = decodeURIComponent(window.location.hash.slice(1));
+      const anchor = hash ? document.getElementById(hash) : null;
+      if (anchor) anchor.scrollIntoView();
+      else window.scrollTo(0, 0);
+      ScrollTrigger.refresh();
+      requestAnimationFrame(reveal);
+    };
     window.clearTimeout(arriveTimer.current);
     arriveTimer.current = window.setTimeout(
       () => {
-        ScrollTrigger.refresh();
-        requestAnimationFrame(reveal);
+        const cover = coverAnim.current;
+        if (cover && cover.playState === "running") cover.finished.then(settle, settle);
+        else settle();
       },
-      Math.max(40, MIN_COVER - (performance.now() - startedAt.current)),
+      Math.max(0, MIN_COVER - (performance.now() - startedAt.current)),
     );
   }, [reveal]);
 
@@ -183,13 +198,17 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
       revealing.current = false;
       startedAt.current = performance.now();
       fromPath.current = window.location.pathname;
-      setCurtainCovering(true);
+      setCurtainCovering(true, startedAt.current + MIN_COVER);
       nextTarget.current = target;
       pending.current = url.pathname;
       router.prefetch(target);
       if (label.current) label.current.textContent = labelFor(url.pathname);
 
-      /** Lance la navigation une seule fois : à la fin de la montée de la nappe, ou au plus tard juste après. */
+      /**
+       * Lance la navigation une seule fois, dès que la nappe a commencé à monter : la nouvelle
+       * page se construit pendant la montée (et non après), son contenu reste effacé jusqu'à
+       * ce que la nappe couvre tout l'écran.
+       */
       const go = () => {
         // (pas de navigation si elle a été abandonnée entre-temps, ex. bouton précédent)
         if (pushed.current || !busy.current || !pending.current) return;
@@ -205,7 +224,9 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
         anims.current.forEach((a) => a.cancel());
         anims.current = [];
         el.style.visibility = "visible";
-        const cover = play(
+        // le contenu de la page quittée s'efface pendant que la nappe monte (layout.css)
+        document.documentElement.setAttribute("data-leaving", "");
+        coverAnim.current = play(
           panel.current,
           [{ transform: `translateY(calc(100% + ${LIP}))` }, { transform: "translateY(0)" }],
           { duration: COVER, easing: EASE_COVER },
@@ -229,8 +250,10 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
             easing: EASE_OUT,
           },
         );
-        if (cover) cover.finished.then(go, go);
-        window.setTimeout(go, COVER + 120);
+        // deux images plus tard : les animations de la nappe tournent déjà sur le compositeur,
+        // le rendu de la nouvelle page ne peut plus les retarder (filet si l'onglet est en arrière-plan)
+        requestAnimationFrame(() => requestAnimationFrame(go));
+        window.setTimeout(go, 120);
       } catch {
         // animation impossible sur ce navigateur : navigation directe, rien ne reste bloqué
         finish();
@@ -239,6 +262,13 @@ export function PageTransitionProvider({ children }: { children: React.ReactNode
     },
     [router, finish],
   );
+
+  // Nouvelle page insérée pendant que le contenu s'efface encore (appareil rapide) : invisible
+  // d'un coup, avant même d'être affichée, pour ne jamais apparaître au-dessus de la nappe
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (busy.current && root.hasAttribute("data-leaving")) root.setAttribute("data-leaving", "arrived");
+  }, [pathname]);
 
   // La nouvelle page est rendue : sous la nappe, on remet le défilement en place et on recalcule
   // les animations au scroll (le coûteux), puis on lève la nappe dès que le logo est posé.

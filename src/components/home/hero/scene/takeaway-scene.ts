@@ -37,6 +37,11 @@ export type SceneOptions = {
   onFrame?: (info: FrameInfo) => void;
   /** Pose figée (poster / tests) : temps de la boucle à afficher. */
   freezeAt?: number;
+  /**
+   * Temps de la boucle au démarrage, caméra déjà en place : la scène reprend exactement
+   * l'image du poster qu'elle remplace (aucun saut visible au fondu).
+   */
+  startAt?: number;
 };
 
 export type TakeawayScene = {
@@ -463,6 +468,9 @@ export function createTakeawayScene(canvas: HTMLCanvasElement, opts: SceneOption
     tl.time(opts.freezeAt).pause();
     // plusieurs passes pour stabiliser les positions dérivées
     for (let i = 0; i < 4; i++) frame();
+  } else if (opts.startAt !== undefined) {
+    intro = 1;
+    tl.time(opts.startAt);
   }
 
   function setActive(next: boolean) {

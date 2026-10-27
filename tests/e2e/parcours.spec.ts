@@ -128,7 +128,8 @@ test.describe("Parcours principal", () => {
     await page.goBack();
     await expectCurtainHidden(page);
     await page.waitForTimeout(1500);
-    await expect(page).toHaveURL(/\/nous-trouver$/);
+    // la navigation part dès le clic : précédent ramène sur la page du clic
+    await expect(page).toHaveURL(/\/la-carte$/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(errors).toEqual([]);
   });

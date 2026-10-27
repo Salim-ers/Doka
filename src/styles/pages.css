@@ -56,17 +56,20 @@
 body:has(.site-header[data-hidden]) .mb-tabs {
   top: 12px;
 }
-/* bandeau crème flouté derrière les onglets : les lignes de la carte ne dépassent plus autour */
+/* bandeau crème derrière les onglets : les lignes de la carte ne dépassent plus autour.
+   Dégradé simple, sans flou d'arrière-plan : le flou serait recalculé à chaque image du
+   défilement (coûteux sur téléphone). */
 .mb-tabs::before {
   content: "";
   position: absolute;
   inset: -10px 0 -16px;
   z-index: -1;
-  background: rgb(255 251 234 / 0.72);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 70%, transparent);
-  mask-image: linear-gradient(transparent, #000 22%, #000 70%, transparent);
+  background: linear-gradient(
+    rgb(255 251 234 / 0),
+    rgb(255 251 234 / 0.94) 22%,
+    rgb(255 251 234 / 0.94) 70%,
+    rgb(255 251 234 / 0)
+  );
 }
 .mb-tabs .chips {
   pointer-events: auto;
@@ -88,6 +91,16 @@ body:has(.site-header[data-hidden]) .mb-tabs {
 .mb-section__title,
 .mb-options > .mb-section__title {
   text-align: center;
+}
+/* Apparition des lignes à l'arrivée sur la page, en cascade (--i : rang, posé par MenuBoard) */
+.mb[data-enter] :is(.mb-section__title, .mb-row, .mb-options__h, .mb-byoc) {
+  animation: mb-in 600ms var(--ease-out) calc(var(--mb-delay, 0s) + var(--i, 0) * 25ms) backwards;
+}
+@keyframes mb-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
 }
 .mb-row__thumb {
   position: relative;

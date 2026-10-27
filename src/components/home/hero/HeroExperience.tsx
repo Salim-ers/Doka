@@ -163,6 +163,8 @@ export function HeroExperience() {
       try {
         scene = createTakeawayScene(canvasRef.current, {
           quality: "high",
+          // même instant que le poster : la scène prend le relais sans repartir du début
+          startAt: HANDOFF_HERO,
           onFrame: ({ cupX, cupY, zoom, time, customer, barista }) => {
             trackCup(cupX, cupY);
             // le dialogue s'efface dès que la vue plonge vers le gobelet
@@ -221,6 +223,10 @@ export function HeroExperience() {
     const stage = stageRef.current;
     const media = mediaRef.current;
     if (!v || !stage || !media) return;
+    // La vidéo démarre sur l'image du poster (passage du gobelet), pas au début de la boucle :
+    // aucun saut quand elle remplace le poster. Avant les métadonnées, le navigateur retient
+    // ce point de départ et l'applique au chargement.
+    v.currentTime = HANDOFF_HERO;
     let raf = 0;
     const place = () => {
       const p = videoHandoff(media).stage;

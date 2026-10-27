@@ -5,13 +5,16 @@
  * plutôt que derrière.
  */
 
-/** Durée (s), environ, entre l'arrivée de la nouvelle page et le début de l'ouverture de la nappe. */
+/** Durée (s), environ, entre l'ouverture prévue de la nappe et le moment où elle commence vraiment à monter. */
 export const CURTAIN_HOLD = 0.1;
 
 let curtainCovering = false;
+/** Instant prévu (performance.now(), ms) où la nappe commence à s'ouvrir. */
+let curtainOpensAt = 0;
 
-export function setCurtainCovering(covering: boolean) {
+export function setCurtainCovering(covering: boolean, opensAt = 0) {
   curtainCovering = covering;
+  curtainOpensAt = opensAt;
 }
 
 /** Secondes avant que l'écran de chargement ne s'ouvre (0 s'il est absent ou terminé). */
@@ -25,7 +28,13 @@ function loaderRemaining() {
   return Math.max(0, (delay - elapsed) / 1000);
 }
 
+/** Secondes avant que la nappe de transition ne s'ouvre (la page arrive souvent pendant sa montée). */
+function curtainRemaining() {
+  if (!curtainCovering) return 0;
+  return Math.max(0, (curtainOpensAt - performance.now()) / 1000) + CURTAIN_HOLD;
+}
+
 export function entranceDelay() {
   if (typeof document === "undefined") return 0;
-  return Math.max(loaderRemaining(), curtainCovering ? CURTAIN_HOLD : 0);
+  return Math.max(loaderRemaining(), curtainRemaining());
 }

@@ -340,6 +340,17 @@
    ========================================================================== */
 /* Animée en transform / opacity via l'API Web Animations (PageTransition) : calculé par le
    compositeur, l'animation reste fluide pendant que la nouvelle page se construit. */
+/* Au clic, le contenu de la page quittée s'efface pendant que la nappe monte : la nouvelle
+   page peut se construire dessous sans que le changement se voie au-dessus de la nappe.
+   Il réapparaît d'un coup, sous la nappe, quand elle couvre tout l'écran. */
+[data-leaving] :is(#contenu, .site-footer) {
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out);
+}
+/* la nouvelle page est arrivée avant que la nappe ait tout couvert : invisible tout de suite */
+[data-leaving="arrived"] :is(#contenu, .site-footer) {
+  transition: none;
+}
 .page-curtain {
   position: fixed;
   inset: 0;
@@ -637,9 +648,9 @@
     width: min(calc(100% - 2 * var(--gutter)), 520px);
     padding: 10px;
     border-radius: var(--r-pill);
-    background: rgb(255 251 234 / 0.82);
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    backdrop-filter: blur(14px) saturate(1.4);
+    /* fond presque opaque plutôt qu'un flou d'arrière-plan : la barre reste fixe pendant
+       le défilement, un flou serait recalculé à chaque image (saccades sur téléphone) */
+    background: rgb(255 251 234 / 0.95);
     box-shadow:
       0 0 0 1px rgb(23 23 20 / 0.08),
       0 18px 40px -18px rgb(23 23 20 / 0.55);

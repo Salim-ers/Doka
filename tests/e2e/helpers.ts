@@ -46,7 +46,8 @@ export async function expectNoBrokenImages(page: Page) {
   expect(broken, `Images cassées : ${broken.join(", ")}`).toEqual([]);
 }
 
-/** La nappe de transition ne doit jamais rester affichée. */
+/** La nappe de transition ne doit jamais rester affichée, ni le contenu rester effacé. */
 export async function expectCurtainHidden(page: Page) {
   await expect(page.locator(".page-curtain")).toBeHidden({ timeout: 5000 });
+  await expect(page.locator("#contenu")).toHaveCSS("opacity", "1");
 }
