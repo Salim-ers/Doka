@@ -26,6 +26,7 @@ Node 20.9+ (développé et testé avec Node 22).
 | `npm run images`        | Regénère les images web (`public/images/doka`) depuis `media/originals`                  |
 | `npm run poster`        | Regénère les posters du hero depuis la vraie scène 3D (serveur de dev lancé)             |
 | `npm run og`            | Regénère l'image de partage en français (`public/images/doka/doka-og.jpg`)                |
+| `npm run icons`         | Regénère les icônes du site depuis le logo (`icon.svg`, `favicon.ico`, `apple-icon.png`) |
 | `npm run video`         | Regénère la vidéo mobile du hero depuis la vraie scène 3D (serveur de dev lancé, ffmpeg) |
 | `npm run test:e2e`      | Tests de parcours Playwright (build requis)                                              |
 
@@ -62,7 +63,7 @@ Tout le contenu factuel est centralisé ; la mise en page ne contient aucun prix
 src/
   app/                    routes (accueil, la-carte, nos-favoris, produits/[slug], esprit-doka,
                           nous-trouver, mentions-legales, confidentialite),
-                          sitemap.ts, robots.ts, not-found.tsx, icon.svg
+                          sitemap.ts, robots.ts, not-found.tsx, icônes (npm run icons)
                           (/produits → /la-carte et /le-coffee-shop → /esprit-doka : redirections)
   components/
     brand/                logo officiel vectorisé (lettres séparées, jamais déformées)

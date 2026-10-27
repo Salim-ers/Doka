@@ -29,6 +29,7 @@ Source de vérité technique : `src/data/media.ts` (ce document en est la versio
 | `public/videos/hero-takeaway.{webm,mp4}` | Rendu image par image de la scène 3D (`npm run video`) | Hero mobile |
 | Cartes « boisson vue de dessus » | SVG générés depuis le catalogue (`ProductArt`) | Repli pour un produit sans aucune photo |
 | Logo | Vectorisation fidèle du visuel officiel | Partout (header, footer, intro, transitions, scène 3D, favicon) |
+| `src/app/icon.svg`, `favicon.ico`, `apple-icon.png` | Logo officiel crème sur orange, « do » au-dessus de « ka » (`npm run icons`) | Onglet du navigateur, favoris, écran d'accueil du téléphone |
 
 ## Photos d'illustration libres de droits (produits sans visuel Doka)
 
