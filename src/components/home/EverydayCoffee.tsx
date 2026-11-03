@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP, COMPACT, MOTION_OK } from "@/lib/gsap";
 import { everydayLadder, formatPrice, priceRange, productsBySlug } from "@/data/products";
 import { DLink } from "@/components/ui/DLink";
 
@@ -11,6 +11,8 @@ import { DLink } from "@/components/ui/DLink";
  * tous les jours, / dès 1,50 € »), puis le prix quitte la phrase et grossit jusqu'à
  * occuper l'écran en comptant depuis zéro. Enfin l'échelle des prix du quotidien se
  * dessine et le fond passe de l'orange au crème.
+ * Téléphone et tablette : le même récit sans capter le défilement. La phrase se pose et le prix
+ * compte à l'arrivée de la section, l'échelle se dessine juste en dessous.
  * Sans animation : les trois blocs s'affichent simplement les uns sous les autres.
  */
 export function EverydayCoffee() {
@@ -26,7 +28,47 @@ export function EverydayCoffee() {
       const el = root.current;
       if (!el) return;
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (!ctx.conditions?.motion) return;
+        if (ctx.conditions.compact) {
+          const inlineValue = el.querySelector<HTMLElement>("[data-inline-value]");
+          const count = { v: 0 };
+          gsap
+            .timeline({ scrollTrigger: { trigger: el, start: "top 70%", once: true } })
+            .fromTo(
+              ".ev-line__in",
+              { yPercent: 108 },
+              { yPercent: 0, duration: 0.8, stagger: 0.12, ease: "doka.out" },
+              0,
+            )
+            .to(
+              count,
+              {
+                v: espresso.price ?? 0,
+                duration: 0.9,
+                ease: "power2.out",
+                onUpdate: () => {
+                  if (inlineValue) {
+                    inlineValue.textContent = formatPrice(Math.round(count.v / 10) * 10, { currency: false });
+                  }
+                },
+              },
+              0.3,
+            )
+            .from(".ev-note", { autoAlpha: 0, y: 14, duration: 0.5 }, 0.5);
+          gsap
+            .timeline({ scrollTrigger: { trigger: ".ev-ladder", start: "top 88%", once: true } })
+            .from(".ev-ladder__row", { autoAlpha: 0, x: -24, stagger: 0.08, duration: 0.5 }, 0)
+            .fromTo(
+              ".ev-ladder__bar",
+              { scaleX: 0 },
+              { scaleX: 1, stagger: 0.08, duration: 0.7, ease: "power2.out", transformOrigin: "0% 50%" },
+              0.1,
+            );
+          return () => {
+            if (inlineValue) inlineValue.textContent = priceLabel;
+          };
+        }
         el.classList.add("is-animated");
         const giant = el.querySelector<HTMLElement>(".ev-giant");
         const value = el.querySelector<HTMLElement>(".ev-giant [data-value]");
@@ -141,7 +183,10 @@ export function EverydayCoffee() {
             </span>{" "}
             <span className="ev-line ev-line--3">
               <span className="ev-line__in">
-                dès <span className="ev-inline-price">{priceLabel}&nbsp;€</span>
+                dès{" "}
+                <span className="ev-inline-price">
+                  <span data-inline-value>{priceLabel}</span>&nbsp;€
+                </span>
               </span>
             </span>
           </h2>

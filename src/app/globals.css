@@ -5,6 +5,7 @@
 @import "../styles/layout.css";
 @import "../styles/home.css";
 @import "../styles/pages.css";
+@import "../styles/compact.css";
 
 @theme inline {
   --color-orange: var(--orange);

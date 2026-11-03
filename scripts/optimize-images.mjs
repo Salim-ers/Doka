@@ -57,20 +57,26 @@ for (const c of CROPS) {
   console.log(`${c.to}: ${c.width ?? meta.width}×${c.height ?? meta.height - c.top}`);
 }
 
-// Photos d'illustration libres de droits (media/originals/stock, une par produit sans
-// visuel Doka) : souvent très grandes, elles sont ramenées à 1672 px de large au plus
-// (la plus grande taille servie par next/image) et écrites dans public/images/doka/produits.
-const STOCK = path.join(SRC, "stock");
-const STOCK_OUT = path.join(OUT, "produits");
-await mkdir(STOCK_OUT, { recursive: true });
-const stock = (await readdir(STOCK).catch(() => [])).filter((f) => /\.(png|jpe?g)$/i.test(f));
-for (const file of stock) {
-  const name = file.replace(/\.(png|jpe?g)$/i, "");
-  const info = await sharp(path.join(STOCK, file))
-    .rotate()
-    .resize({ width: 1672, height: 1672, fit: "inside", withoutEnlargement: true })
-    .sharpen({ sigma: 0.6, m1: 0.4, m2: 0.8 })
-    .webp({ quality: 86, effort: 6 })
-    .toFile(path.join(STOCK_OUT, `${name}.webp`));
-  console.log(`produits/${name}: ${info.width}×${info.height}`);
+// Visuels par produit : photos libres de droits (media/originals/stock) et visuels générés
+// par IA (media/originals/ia, voir docs/MEDIAS.md). Ils sont ramenés à 1672 px de large au plus
+// (la plus grande taille servie par next/image) et écrits dans public/images/doka/produits
+// (produits/ia pour les visuels générés).
+for (const [folder, target] of [
+  ["stock", "produits"],
+  ["ia", "produits/ia"],
+]) {
+  const PRODUCTS_OUT = path.join(OUT, target);
+  await mkdir(PRODUCTS_OUT, { recursive: true });
+  const dir = path.join(SRC, folder);
+  const files = (await readdir(dir).catch(() => [])).filter((f) => /\.(png|jpe?g)$/i.test(f));
+  for (const file of files) {
+    const name = file.replace(/\.(png|jpe?g)$/i, "");
+    const info = await sharp(path.join(dir, file))
+      .rotate()
+      .resize({ width: 1672, height: 1672, fit: "inside", withoutEnlargement: true })
+      .sharpen({ sigma: 0.6, m1: 0.4, m2: 0.8 })
+      .webp({ quality: 86, effort: 6 })
+      .toFile(path.join(PRODUCTS_OUT, `${name}.webp`));
+    console.log(`${target}/${name}: ${info.width}×${info.height}`);
+  }
 }

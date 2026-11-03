@@ -7,7 +7,7 @@ import { entranceDelay } from "@/lib/entrance";
 import { bringYourOwnCup, drinkOptions, formatPrice, productsBySlug, type Product } from "@/data/products";
 import { sectionOf } from "@/data/categories";
 import { siteConfig } from "@/data/site-config";
-import { media } from "@/data/media";
+import { captionLabel, media } from "@/data/media";
 import { DLink } from "@/components/ui/DLink";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
@@ -74,7 +74,9 @@ export function ProductDetail({ product }: { product: Product }) {
             <ProductVisual product={product} sizes="(max-width: 900px) 100vw, 55vw" priority />
           </div>
           {product.mediaCaption ? (
-            <p className="small muted pd-caption">Photo : {product.mediaCaption.toLowerCase()}.</p>
+            <p className="small muted pd-caption">
+              {captionLabel(product.media)} : {product.mediaCaption.toLowerCase()}.
+            </p>
           ) : product.media && media[product.media].credit ? (
             <p className="small muted pd-caption">Photo d&apos;illustration, libre de droits.</p>
           ) : (

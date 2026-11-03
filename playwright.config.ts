@@ -38,12 +38,17 @@ export default defineConfig({
     {
       name: "desktop",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, launchOptions },
-      testIgnore: /mobile\.spec\.ts/,
+      testIgnore: /(mobile|compact)\.spec\.ts/,
     },
     {
       name: "mobile",
       use: { ...devices["Pixel 7"], launchOptions },
-      testMatch: /mobile\.spec\.ts/,
+      testMatch: /(mobile|compact)\.spec\.ts/,
+    },
+    {
+      name: "tablette",
+      use: { ...devices["iPad Mini"], browserName: "chromium", launchOptions },
+      testMatch: /compact\.spec\.ts/,
     },
   ],
   webServer: {

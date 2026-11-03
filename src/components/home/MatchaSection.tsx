@@ -105,7 +105,7 @@ export function MatchaSection() {
               style={{ objectFit: "cover", objectPosition: m.focus }}
             />
           </div>
-          <figcaption className="small">Visuel officiel doka matcha, en version glacée.</figcaption>
+          <figcaption className="small">Matcha latte en version glacée. Visuel généré par IA.</figcaption>
         </figure>
       </div>
     </section>

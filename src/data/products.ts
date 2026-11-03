@@ -158,6 +158,7 @@ export const products: Product[] = [
     description: "La boisson signature de la carte, autour du matcha et de la noix de coco.",
     toConfirm: true,
     media: "nuageCocoMatcha",
+    mediaCaption: "En version glacée",
     options: ["iced", "oat", "syrup", "extraShot"],
     tone: "cloud",
     pairsWith: ["matcha-latte", "cookies"],

@@ -1189,6 +1189,9 @@ body:has(.site-header[data-hidden]) .mb-tabs {
   font-weight: 560;
   font-size: 0.85em;
 }
+.loc-hours-summary {
+  display: none;
+}
 .loc-access {
   list-style: none;
   margin: 0;

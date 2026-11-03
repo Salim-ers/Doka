@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { captionLabel } from "@/data/media";
 import { formatPrice, productsBySlug, signatureSelection } from "@/data/products";
 import { DLink } from "@/components/ui/DLink";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
@@ -74,7 +75,11 @@ export function EditorialSelection() {
             <h3 className="sel-item__name display">{p.name.toLowerCase()}</h3>
             <p className="sel-item__price price">{formatPrice(p.price)}</p>
             <p className="sel-item__text">{p.description}</p>
-            {p.mediaCaption && <p className="small muted">Photo : {p.mediaCaption.toLowerCase()}.</p>}
+            {p.mediaCaption && (
+              <p className="small muted">
+                {captionLabel(p.media)} : {p.mediaCaption.toLowerCase()}.
+              </p>
+            )}
             <div className="sel-item__actions">
               <DLink href={`/produits/${p.slug}`} className="sel-item__link">
                 Voir la fiche {p.name}

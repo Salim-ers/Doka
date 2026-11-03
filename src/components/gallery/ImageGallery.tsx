@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { Expand } from "lucide-react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP, COMPACT, MOTION_OK } from "@/lib/gsap";
 import { media } from "@/data/media";
 import { siteConfig } from "@/data/site-config";
 import { AnimatedHeading } from "@/components/motion/AnimatedHeading";
@@ -14,6 +14,7 @@ const PLACE = ["devantureSoir", "gobeletRue"] as const;
 /**
  * Le lieu, dans « L'esprit Doka » : la devanture s'agrandit jusqu'au plein écran,
  * un texte sur le guichet, puis la rue défile latéralement.
+ * Téléphone et tablette : la devanture s'ouvre pendant qu'elle arrive à l'écran, sans section collante.
  * Chaque photo s'ouvre dans la visionneuse.
  */
 export function ImageGallery() {
@@ -25,15 +26,20 @@ export function ImageGallery() {
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (!ctx.conditions?.motion) return;
+        const compact = ctx.conditions.compact;
         // 1. la devanture s'agrandit jusqu'au plein cadre
+        const frameScroll = compact
+          ? { trigger: ".cs-open", start: "top 95%", end: "top 35%", scrub: 0.4 }
+          : { trigger: ".cs-open", start: "top top", end: "bottom bottom", scrub: 0.4 };
         gsap.fromTo(
           ".cs-open__frame",
-          { clipPath: "inset(14% 22% 14% 22% round 2.4rem)" },
+          { clipPath: compact ? "inset(8% 12% 8% 12% round 2.2rem)" : "inset(14% 22% 14% 22% round 2.4rem)" },
           {
             clipPath: "inset(0% 0% 0% 0% round 0rem)",
             ease: "none",
-            scrollTrigger: { trigger: ".cs-open", start: "top top", end: "bottom bottom", scrub: 0.4 },
+            scrollTrigger: frameScroll,
           },
         );
         gsap.fromTo(
@@ -42,7 +48,7 @@ export function ImageGallery() {
           {
             scale: 1,
             ease: "none",
-            scrollTrigger: { trigger: ".cs-open", start: "top top", end: "bottom bottom", scrub: 0.4 },
+            scrollTrigger: frameScroll,
           },
         );
         gsap.fromTo(
@@ -52,7 +58,12 @@ export function ImageGallery() {
             yPercent: 0,
             autoAlpha: 1,
             ease: "none",
-            scrollTrigger: { trigger: ".cs-open", start: "top 60%", end: "top top", scrub: true },
+            scrollTrigger: {
+              trigger: ".cs-open",
+              start: compact ? "top 70%" : "top 60%",
+              end: compact ? "top 30%" : "top top",
+              scrub: true,
+            },
           },
         );
         // 2. la rue défile latéralement (amplitude limitée)

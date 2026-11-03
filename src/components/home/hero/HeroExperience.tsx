@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { preload } from "react-dom";
 import { ArrowDown } from "lucide-react";
-import { gsap, useGSAP, SplitText } from "@/lib/gsap";
+import { gsap, useGSAP, SplitText, COMPACT, MOTION_OK } from "@/lib/gsap";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { DokaLogo } from "@/components/brand/DokaLogo";
 import { DokaCup } from "@/components/brand/DokaCup";
@@ -21,6 +21,8 @@ import videoMeta from "../../../../public/videos/hero-takeaway.json";
  * le barista lui tend un gobelet, il repart). Au passage du gobelet, « made for every day »
  * apparaît. Au scroll, la vue plonge vers le gobelet puis une nappe orange s'ouvre depuis
  * lui et révèle la section suivante.
+ * Téléphone et tablette : le hero tient en un écran, sans section collante. La nappe s'ouvre
+ * depuis le gobelet pendant que le hero quitte l'écran, sans défilement supplémentaire.
  *
  * Trois rendus, choisis à l'exécution :
  * - « live »  : scène Three.js temps réel (grand écran, pointeur fin, WebGL) — la caméra suit
@@ -100,6 +102,8 @@ export function HeroExperience() {
   const cupScreen = useRef({ x: 0, y: 0 });
   const zoomLocked = useRef(false);
   const [mode, setModeState] = useState<Mode>("poster");
+  // le gros plan ne sert qu'au zoom au scroll : pas de téléchargement sur téléphone et tablette
+  const [closeUp, setCloseUp] = useState(false);
   const espresso = productsBySlug.espresso;
 
   const setMode = (m: Mode) => {
@@ -324,7 +328,10 @@ export function HeroExperience() {
       const el = root.current;
       if (!el) return;
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (!ctx.conditions?.motion) return;
+        const compact = ctx.conditions.compact;
+        setCloseUp(!compact);
         const delay = 0.15 + entranceDelay();
         const reveal = el.querySelectorAll<HTMLElement>("[data-reveal='hero']");
         const split = SplitText.create(el.querySelector(".hero__title"), {
@@ -408,8 +415,12 @@ export function HeroExperience() {
           if (!flood) return;
           const { x, y } = cupScreen.current;
           const box = stageRef.current?.getBoundingClientRect();
-          const cx = `${Math.round((box?.left ?? 0) + (x || window.innerWidth * 0.62 - (box?.left ?? 0)))}px`;
-          const cy = `${Math.round((box?.top ?? 0) + (y || window.innerHeight * 0.55 - (box?.top ?? 0)))}px`;
+          // repère du bloc du hero (il défile avec la page sur téléphone et tablette)
+          const hero = flood.parentElement?.getBoundingClientRect();
+          const heroLeft = hero?.left ?? 0;
+          const heroTop = hero?.top ?? 0;
+          const cx = `${Math.round(x ? (box?.left ?? 0) - heroLeft + x : window.innerWidth * 0.62)}px`;
+          const cy = `${Math.round(y ? (box?.top ?? 0) - heroTop + y : window.innerHeight * 0.55)}px`;
           if (cx !== lastCx) flood.style.setProperty("--cx", (lastCx = cx));
           if (cy !== lastCy) flood.style.setProperty("--cy", (lastCy = cy));
         };
@@ -420,32 +431,50 @@ export function HeroExperience() {
           if (on) gsap.ticker.add(syncFlood);
           else gsap.ticker.remove(syncFlood);
         };
-        const st = gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: el,
-              start: "top top",
-              end: "bottom bottom",
-              scrub: 0.4,
-              onUpdate: (self) => {
-                sceneRef.current?.setScroll(self.progress);
-                setVideoScroll(self.progress);
-                trackFlood(self.isActive && self.progress > 0.6);
-              },
-              onToggle: (self) => trackFlood(self.isActive && self.progress > 0.6),
-            },
-          })
-          .to(".hero__copy", { yPercent: -18, autoAlpha: 0, ease: "none", duration: 0.32 }, 0)
-          .to(".hero__scroll, .hero__sticker", { autoAlpha: 0, ease: "none", duration: 0.12 }, 0)
-          .to(".hero__badges", { yPercent: -30, autoAlpha: 0, ease: "none", duration: 0.22 }, 0)
-          .to(".hero__bglogo", { scale: 1.25, autoAlpha: 0, ease: "none", duration: 0.6 }, 0)
-          .to(zoom, { v: 1, ease: "power2.inOut", duration: 0.75, onUpdate: applyVideoZoom }, 0.02)
-          .fromTo(
-            flood,
-            { clipPath: "circle(0% at var(--cx) var(--cy))" },
-            { clipPath: "circle(150% at var(--cx) var(--cy))", ease: "power2.in", duration: 0.22 },
-            0.78,
-          );
+        const st = compact
+          ? gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: el,
+                  start: "top top",
+                  end: "bottom top",
+                  scrub: 0.3,
+                  onToggle: (self) => trackFlood(self.isActive),
+                },
+              })
+              .to(".hero__copy, .hero__sticker, .hero__badges", { autoAlpha: 0, ease: "none", duration: 0.3 }, 0)
+              .fromTo(
+                flood,
+                { clipPath: "circle(0% at var(--cx) var(--cy))" },
+                { clipPath: "circle(150% at var(--cx) var(--cy))", ease: "power2.in", duration: 0.75 },
+                0.05,
+              )
+          : gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: el,
+                  start: "top top",
+                  end: "bottom bottom",
+                  scrub: 0.4,
+                  onUpdate: (self) => {
+                    sceneRef.current?.setScroll(self.progress);
+                    setVideoScroll(self.progress);
+                    trackFlood(self.isActive && self.progress > 0.6);
+                  },
+                  onToggle: (self) => trackFlood(self.isActive && self.progress > 0.6),
+                },
+              })
+              .to(".hero__copy", { yPercent: -18, autoAlpha: 0, ease: "none", duration: 0.32 }, 0)
+              .to(".hero__scroll, .hero__sticker", { autoAlpha: 0, ease: "none", duration: 0.12 }, 0)
+              .to(".hero__badges", { yPercent: -30, autoAlpha: 0, ease: "none", duration: 0.22 }, 0)
+              .to(".hero__bglogo", { scale: 1.25, autoAlpha: 0, ease: "none", duration: 0.6 }, 0)
+              .to(zoom, { v: 1, ease: "power2.inOut", duration: 0.75, onUpdate: applyVideoZoom }, 0.02)
+              .fromTo(
+                flood,
+                { clipPath: "circle(0% at var(--cx) var(--cy))" },
+                { clipPath: "circle(150% at var(--cx) var(--cy))", ease: "power2.in", duration: 0.22 },
+                0.78,
+              );
         return () => {
           floats.forEach((a) => a.cancel());
           trackFlood(false);
@@ -504,7 +533,7 @@ export function HeroExperience() {
               </>
             )}
           </div>
-          {mode === "video" && (
+          {mode === "video" && closeUp && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element -- gros plan pré-rendu, monté seulement en mode vidéo */}
               <img

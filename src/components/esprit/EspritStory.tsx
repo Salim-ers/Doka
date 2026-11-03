@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP, SplitText } from "@/lib/gsap";
+import { gsap, useGSAP, SplitText, COMPACT, MOTION_OK } from "@/lib/gsap";
 import { bringYourOwnCup, drinkOptions, formatPrice, productsBySlug } from "@/data/products";
 import { IdentityCard } from "./IdentityCard";
 import { BoardCard } from "./BoardCard";
@@ -14,6 +14,7 @@ import { ImageGallery } from "@/components/gallery/ImageGallery";
  * L'esprit Doka — narration au scroll, construite uniquement à partir de ce que
  * la marque dit d'elle-même (visuels officiels) et de sa carte : la philosophie,
  * la signature, le lieu (devanture, guichet, rue), l'identité, la carte.
+ * Téléphone et tablette : les chapitres sont lisibles d'un coup d'œil, sans section collante.
  */
 export function EspritStory() {
   const root = useRef<HTMLDivElement>(null);
@@ -48,61 +49,72 @@ export function EspritStory() {
       const el = root.current;
       if (!el) return;
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        el.classList.add("is-animated");
-        // Chapitres : un seul à la fois, la phrase de la marque en géant
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (!ctx.conditions?.motion) return;
         const items = gsap.utils.toArray<HTMLElement>(".ch-item", el);
-        const tl = gsap.timeline({
-          scrollTrigger: { trigger: ".ch", start: "top top", end: "bottom bottom", scrub: 0.5 },
-        });
-        items.forEach((item, i) => {
-          const big = item.querySelector(".ch-item__big");
-          const small = item.querySelector(".ch-item__text");
-          // le premier chapitre entre dès que la section arrive (jamais d'écran vide) ;
-          // les suivants se relaient au scroll
-          const at = i * 1.2 - 0.6;
-          if (i === 0) {
+        if (ctx.conditions.compact) {
+          // Chapitres : chacun se pose à son arrivée, le doigt reste libre
+          items.forEach((item) => {
             gsap
-              .timeline({
-                scrollTrigger: { trigger: ".ch", start: "top 65%", toggleActions: "play none none reverse" },
-              })
-              .fromTo(
+              .timeline({ scrollTrigger: { trigger: item, start: "top 90%", once: true } })
+              .from(item.querySelector(".ch-item__big"), { yPercent: 40, autoAlpha: 0, duration: 0.7 }, 0)
+              .from(item.querySelector(".ch-item__text"), { y: 16, autoAlpha: 0, duration: 0.5 }, 0.12);
+          });
+        } else {
+          el.classList.add("is-animated");
+          // Chapitres : un seul à la fois, la phrase de la marque en géant
+          const tl = gsap.timeline({
+            scrollTrigger: { trigger: ".ch", start: "top top", end: "bottom bottom", scrub: 0.5 },
+          });
+          items.forEach((item, i) => {
+            const big = item.querySelector(".ch-item__big");
+            const small = item.querySelector(".ch-item__text");
+            // le premier chapitre entre dès que la section arrive (jamais d'écran vide) ;
+            // les suivants se relaient au scroll
+            const at = i * 1.2 - 0.6;
+            if (i === 0) {
+              gsap
+                .timeline({
+                  scrollTrigger: { trigger: ".ch", start: "top 65%", toggleActions: "play none none reverse" },
+                })
+                .fromTo(
+                  big,
+                  { yPercent: 100, autoAlpha: 0 },
+                  { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "doka.out" },
+                )
+                .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 0.2);
+              gsap.set(".ch-progress__dot", {
+                scale: (k: number) => (k === 0 ? 1.8 : 1),
+                backgroundColor: (k: number) => (k === 0 ? "#F14323" : "rgba(23,23,20,0.18)"),
+              });
+            } else {
+              tl.fromTo(
                 big,
                 { yPercent: 100, autoAlpha: 0 },
-                { yPercent: 0, autoAlpha: 1, duration: 0.8, ease: "doka.out" },
-              )
-              .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 0.2);
-            gsap.set(".ch-progress__dot", {
-              scale: (k: number) => (k === 0 ? 1.8 : 1),
-              backgroundColor: (k: number) => (k === 0 ? "#F14323" : "rgba(23,23,20,0.18)"),
-            });
-          } else {
-            tl.fromTo(
-              big,
-              { yPercent: 100, autoAlpha: 0 },
-              { yPercent: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" },
-              at,
-            )
-              .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, at + 0.15)
-              .to(
-                ".ch-progress__dot",
-                {
-                  scale: (k: number) => (k === i ? 1.8 : 1),
-                  backgroundColor: (k: number) => (k <= i ? "#F14323" : "rgba(23,23,20,0.18)"),
-                  duration: 0.2,
-                },
+                { yPercent: 0, autoAlpha: 1, duration: 0.5, ease: "power2.out" },
                 at,
-              );
-          }
-          if (i < items.length - 1) {
-            tl.to(
-              big,
-              { yPercent: -100, autoAlpha: 0, duration: 0.5, ease: "power2.in" },
-              Math.max(0.05, at + 0.95),
-            ).to(small, { y: -20, autoAlpha: 0, duration: 0.3 }, Math.max(0.05, at + 0.95));
-          }
-        });
-        tl.to({}, { duration: 0.4 });
+              )
+                .fromTo(small, { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4 }, at + 0.15)
+                .to(
+                  ".ch-progress__dot",
+                  {
+                    scale: (k: number) => (k === i ? 1.8 : 1),
+                    backgroundColor: (k: number) => (k <= i ? "#F14323" : "rgba(23,23,20,0.18)"),
+                    duration: 0.2,
+                  },
+                  at,
+                );
+            }
+            if (i < items.length - 1) {
+              tl.to(
+                big,
+                { yPercent: -100, autoAlpha: 0, duration: 0.5, ease: "power2.in" },
+                Math.max(0.05, at + 0.95),
+              ).to(small, { y: -20, autoAlpha: 0, duration: 0.3 }, Math.max(0.05, at + 0.95));
+            }
+          });
+          tl.to({}, { duration: 0.4 });
+        }
 
         // Citation : la signature lettre par lettre
         const quote = el.querySelector(".es-quote__text");

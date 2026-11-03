@@ -20,7 +20,7 @@ type Props = {
  * monte en vagues, précédé d'un filet plus clair (lait, crema), au rythme du scroll.
  * Dessinée en SVG ; deux chemins recalculés par frame tant qu'elle est visible.
  */
-export function CoffeeFlow({ from, to, lead = "#F1E3CC", height = "clamp(160px, 26vw, 360px)", className }: Props) {
+export function CoffeeFlow({ from, to, lead = "#F1E3CC", height = "var(--flow-h)", className }: Props) {
   const root = useRef<HTMLDivElement>(null);
 
   useGSAP(

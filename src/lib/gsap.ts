@@ -30,5 +30,10 @@ export const motion = {
 
 export const REDUCED = "(prefers-reduced-motion: reduce)";
 export const MOTION_OK = "(prefers-reduced-motion: no-preference)";
+/**
+ * Téléphones et tablettes, mêmes conditions que `styles/compact.css` : moins de 1240 px (seuil
+ * de la barre du bas) ou écran tactile. Aucune section n'y capte le défilement.
+ */
+export const COMPACT = "(max-width: 1239px), (pointer: coarse)";
 
 export { gsap, ScrollTrigger, SplitText, Flip, useGSAP };

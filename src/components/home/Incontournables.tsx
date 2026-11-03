@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP, COMPACT, MOTION_OK } from "@/lib/gsap";
+import { captionLabel } from "@/data/media";
 import { signatureSelection, formatPrice, productsBySlug } from "@/data/products";
 import { DLink } from "@/components/ui/DLink";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
@@ -12,7 +13,7 @@ import { AnimatedHeading } from "@/components/motion/AnimatedHeading";
  * Les incontournables : un slider éditorial.
  * - Grand écran : la section reste collée et le scroll vertical fait glisser la frise
  *   horizontalement ; chaque affiche se redresse en arrivant au centre.
- * - Mobile / tactile : carrousel natif à balayer (scroll-snap), aucune capture du scroll.
+ * - Téléphone et tablette : carrousel natif à balayer (scroll-snap), aucune capture du scroll.
  */
 export function Incontournables() {
   const root = useRef<HTMLElement>(null);
@@ -23,7 +24,8 @@ export function Incontournables() {
       const el = root.current;
       if (!el) return;
       const mm = gsap.matchMedia();
-      mm.add("(min-width: 900px) and (prefers-reduced-motion: no-preference)", () => {
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (ctx.conditions?.compact || !ctx.conditions?.motion) return;
         el.classList.add("is-scrubbed");
         const track = el.querySelector<HTMLElement>(".inc-track");
         if (!track) return;
@@ -79,7 +81,11 @@ export function Incontournables() {
                   </h3>
                   <p className="inc-card__short">{p.short}</p>
                   <p className="inc-card__price price">{formatPrice(p.price)}</p>
-                  {p.mediaCaption && <p className="inc-card__caption">Photo : {p.mediaCaption.toLowerCase()}</p>}
+                  {p.mediaCaption && (
+                    <p className="inc-card__caption">
+                      {captionLabel(p.media)} : {p.mediaCaption.toLowerCase()}
+                    </p>
+                  )}
                 </div>
                 <FavoriteButton slug={p.slug} className="inc-card__fav" />
               </li>

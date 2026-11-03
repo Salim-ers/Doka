@@ -16,6 +16,19 @@ test.describe("Parcours principal", () => {
     expect(errors).toEqual([]);
   });
 
+  test("Grand écran : les sections narratives restent pilotées par le scroll", async ({ page }) => {
+    const viewport = page.viewportSize()!.height;
+    await page.goto("/");
+    await expect(page.locator(".ev")).toHaveClass(/is-animated/);
+    await expect(page.locator(".inc")).toHaveClass(/is-scrubbed/);
+    const hero = await page.locator(".hero").boundingBox();
+    expect(hero!.height).toBeCloseTo(viewport * 2.3, 0);
+    await page.goto("/esprit-doka");
+    await expect(page.locator(".es")).toHaveClass(/is-animated/);
+    const lieu = await page.locator(".cs-open").boundingBox();
+    expect(lieu!.height).toBeCloseTo(viewport * 2.2, 0);
+  });
+
   test("Accueil : le dialogue au guichet s'affiche, jamais de bulle vide", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/");

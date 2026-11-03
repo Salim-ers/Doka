@@ -52,7 +52,7 @@ Tout le contenu factuel est centralisé ; la mise en page ne contient aucun prix
 | Photos et textes alternatifs (manifeste des médias) | `src/data/media.ts` — détail dans `docs/MEDIAS.md` |
 
 - Un prix inconnu s'écrit `price: null` : le site affiche « Prix au comptoir », jamais un tarif inventé.
-- Chaque produit a une photo : un visuel officiel Doka quand il existe, sinon une photo d'illustration libre de droits (CC0 / domaine public, crédits dans `docs/MEDIAS.md`). Sans photo, une carte graphique (la boisson vue de dessus) prend le relais. Une photo n'est jamais réutilisée pour un autre produit.
+- Chaque produit a un visuel : une photo Doka quand elle existe, un visuel généré par IA à partir des visuels Doka (latte, matcha latte, nuage coco-matcha, signalés comme tels), sinon une photo d'illustration libre de droits (CC0 / domaine public). Détails et crédits dans `docs/MEDIAS.md`. Sans visuel, une carte graphique (la boisson vue de dessus) prend le relais. Un visuel n'est jamais réutilisé pour un autre produit.
 - Pour masquer les horaires partout : `hours.show = false` dans `site-config.ts`.
 - Les fiches produits (`/produits/[slug]`) sont générées depuis le catalogue : ajouter un produit crée sa page, son entrée de sitemap et ses données structurées. Une fiche renommée garde son ancienne adresse via `renamedSlugs` (redirection permanente).
 - Tout le texte du site est en français ; seuls le nom « Doka Coffee Shop », le compte Instagram et les noms de boissons sans équivalent (espresso, latte, flat white…) restent tels quels.
@@ -82,8 +82,9 @@ src/
   hooks/                  use-favorites (localStorage), use-hydrated
   lib/                    gsap (plugins, courbes Doka), seo (métadonnées, JSON-LD),
                           entrance (synchronise les animations d'entrée avec chargement et transitions)
-  styles/                 tokens.css, base.css, ui.css, layout.css, home.css, pages.css
-media/originals/          photos sources (non déployées)
+  styles/                 tokens.css, base.css, ui.css, layout.css, home.css, pages.css,
+                          compact.css (téléphones et tablettes uniquement)
+media/originals/          visuels sources (non déployés), dont stock/ (libres de droits) et ia/ (générés)
 public/images/doka/       versions web (WebP maître + AVIF), posters du hero
 public/videos/            vidéo du hero mobile (WebM VP9 + MP4 H.264) et repères
 scripts/                  optimisation des images, rendu des posters et de la vidéo
@@ -115,12 +116,39 @@ Autres moments :
 - **Barre d'accès rapide** (`MobileDock`, sous 1240 px, là où l'en-tête n'a que le bouton Menu) : « La carte » et « Itinéraire » fixés en bas de l'écran ; le hero, le pied de page et le bouton retour en haut lui laissent la place (`--dock-space`).
 - Menu mobile qui gonfle depuis le bouton, titres révélés par masques (SplitText), photos révélées selon leur sujet (le café « coule » de haut en bas, le matcha s'ouvre depuis le point du « o »), frise horizontale des incontournables, carte filtrée en cascade (la liste reste dans le flux, la carte revient en haut de l'écran), cœurs qui éclatent en pastilles, cartes produits en profondeur, footer dont les lettres du logo se posent une à une.
 
+### Téléphones et tablettes
+
+Sous 1240 px ou sur écran tactile, le site garde son identité mais le doigt reste libre : **aucune section ne capte le défilement**. Tout le CSS propre à ces écrans est dans `styles/compact.css` ; côté composants, la condition `COMPACT` (`lib/gsap.ts`) choisit la version de chaque animation. Ordinateur inchangé.
+
+| Ordinateur | Téléphone et tablette |
+| --- | --- |
+| Hero collant, zoom puis nappe | Un écran ; la nappe s'ouvre depuis le gobelet pendant que le hero s'en va |
+| « Le bon café » collant (4,8 écrans) | La phrase se pose et le prix compte à l'arrivée, l'échelle des prix sur une nappe crème juste en dessous |
+| Frise des incontournables pilotée par le scroll | Carrousel à balayer |
+| Chapitres de L'esprit Doka collants | Liste lisible d'un coup d'œil (2 colonnes dès 700 px) |
+| « Le lieu » collant | La devanture s'ouvre pendant qu'elle arrive |
+| Sélection de Nos favoris en grandes affiches | Grille de 4 cartes (2 × 2 sur téléphone), chaque carte ouvre sa fiche |
+| Horaires jour par jour | Résumé (semaine, week-end), le statut « ouvert » reste affiché |
+
+Les boutons « Itinéraire » et « Retour à la carte » répétés dans les pages disparaissent sous 1240 px : la barre du bas les remplace. Un test (`tests/e2e/compact.spec.ts`) borne la hauteur de chaque page.
+
+Hauteur des pages, en nombre d'écrans :
+
+| Page | iPhone 390 × 844, avant → après | Tablette 768 × 1024, avant → après |
+| --- | --- | --- |
+| Accueil | 13,7 → 6,1 | 13,1 → 5,5 |
+| L'esprit Doka | 13,2 → 5,3 | 12 → 4,4 |
+| Nos favoris | 6,9 → 2,7 | 6,2 → 2,1 |
+| La carte | 5,2 → 3,2 | 3,7 → 2,6 |
+| Nous trouver | 4,8 → 3 | 3,7 → 2,2 |
+| Fiche produit | 5,5 → 2,6 | 3,9 → 2,7 |
+
 **Mouvement réduit** (`prefers-reduced-motion`) : pas d'écran de chargement, pas de 3D (poster), sections narratives affichées en clair, navigation sans nappe. **Sans JavaScript**, tout le contenu reste lisible (les états « avant animation » n'existent que si JS tourne, avec un filet de sécurité CSS).
 
 ## La scène 3D du hero
 
 - **Grand écran, pointeur fin, WebGL** : Three.js temps réel (`src/components/home/hero/scene`), chargé après le chargement de la page et un temps calme. Il prend le relais du poster au même instant de la boucle (passage du gobelet, option `startAt`), caméra en place : aucun saut au fondu. Rendu suspendu hors écran et onglet masqué ; régulateur qui baisse la résolution puis la cadence si l'appareil peine.
-- **Mobile, tactile, appareil modeste ou sans WebGL** : la même scène pré-rendue en vidéo (WebM 150 Ko / MP4 105 Ko, 12 s en boucle, sans Three.js) ; elle démarre elle aussi sur l'image du poster ; le dialogue est synchronisé sur le temps de la vidéo ; au scroll, la vue avance vers le gobelet puis se fond dans un gros plan pré-rendu.
+- **Mobile, tactile, appareil modeste ou sans WebGL** : la même scène pré-rendue en vidéo (WebM 150 Ko / MP4 105 Ko, 12 s en boucle, sans Three.js) ; elle démarre elle aussi sur l'image du poster ; le dialogue est synchronisé sur le temps de la vidéo. Sur téléphone et tablette, la nappe s'ouvre pendant que le hero quitte l'écran. Sur grand écran, la vue avance au scroll vers le gobelet puis se fond dans un gros plan pré-rendu.
 - **Mouvement réduit** : poster fixe (rendu de la même scène au passage du gobelet).
 - La scène est une **illustration** de la devanture et du service à emporter, pas une photographie ; c'est indiqué dans le texte alternatif et les mentions légales.
 
@@ -157,7 +185,7 @@ npm run test:e2e
 # ou avec un Chromium existant : CHROME_PATH=/chemin/vers/chrome npm run test:e2e
 ```
 
-Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres, fiche produit, ajout de favori, persistance après rechargement, suppression, L'esprit Doka (le lieu) et visionneuse, itinéraire et carte Google Maps, retour à l'accueil, menu mobile (focus, verrouillage du scroll, fermeture), navigation rapide et précédent/suivant, mouvement réduit, statut 200 de toutes les pages, redirections des anciennes adresses, liens internes, images non cassées, absence d'erreurs console, pas de débordement horizontal sur mobile.
+Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres, fiche produit, ajout de favori, persistance après rechargement, suppression, L'esprit Doka (le lieu) et visionneuse, itinéraire et carte Google Maps, retour à l'accueil, menu mobile (focus, verrouillage du scroll, fermeture), navigation rapide et précédent/suivant, mouvement réduit, statut 200 de toutes les pages, redirections des anciennes adresses, liens internes, images non cassées, absence d'erreurs console, pas de débordement horizontal sur mobile. Sur téléphone et tablette, s'y ajoutent le budget de défilement de chaque page et l'absence de section collante.
 
 ---
 
@@ -166,7 +194,7 @@ Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres
 1. **Photos** — les fichiers fournis s'appellent « Image ChatGPT… ». Confirmer qu'ils sont validés par Doka comme visuels officiels. Points visibles : tableaux de prix sur la façade (`3,3`, `3,5`…) différents de la carte, n° « 11 » sur la porte voisine, enseigne et gobelet bleu marine sur la photo du gobelet échangé.
 2. **Prix** de la carte officielle et **applicabilité des options** (version glacée, avoine, sirop, extra shot) boisson par boisson.
 3. **Horaires** — repris de la fiche Google (lun.–ven. 8h–18h, sam.–dim. 9h–19h).
-4. **Descriptions** : composition du nuage coco-matcha (nommé « Coconut Matcha Cloud » sur le tableau), cookies (parfums, prix), sélection des « incontournables ».
+4. **Descriptions** : composition du nuage coco-matcha (nommé « Coconut Matcha Cloud » sur le tableau ; son visuel généré par IA en est une interprétation), cookies (parfums, prix), sélection des « incontournables ».
 5. **Note Google** affichée dans le hero (`siteConfig.googleRating`, 5,0) : à tenir à jour.
 6. **Accès** : stations de métro indiquées (Rambuteau, Hôtel de Ville, Châtelet – Les Halles).
 7. **Mentions légales** : e-mail de contact (absent : renvoi vers Instagram), directeur de la publication, siège social — d'après le registre.
@@ -176,4 +204,4 @@ Couvre les 15 parcours du cahier des charges : accueil complet, carte et filtres
 ### Ressources qui amélioreraient le site
 
 - Originaux haute définition (le livrable 3840 × 2160 n'est pas atteignable avec des sources en 1672 × 941 ; aucune image n'a été agrandie).
-- Photos réelles de l'intérieur, du comptoir, de l'équipe, et une vraie photo Doka par boisson pour remplacer les photos d'illustration libres de droits (allongé, double, americano, cappuccino, flat white, chaï, chocolat, thé, nuage coco-matcha).
+- Photos réelles de l'intérieur, du comptoir, de l'équipe, et une vraie photo Doka par boisson pour remplacer les visuels générés par IA (latte, matcha latte, nuage coco-matcha) et les photos d'illustration libres de droits (allongé, double, americano, cappuccino, flat white, chaï, chocolat, thé).

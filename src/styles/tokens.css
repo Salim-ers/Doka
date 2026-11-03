@@ -42,6 +42,7 @@
   /* Espacements (échelle 4/8) */
   --gutter: clamp(1rem, 3.2vw, 2.75rem);
   --section-y: clamp(5rem, 12vw, 11rem);
+  --flow-h: clamp(160px, 26vw, 360px);
   --maxw: 1440px;
   --measure: 34rem;
 

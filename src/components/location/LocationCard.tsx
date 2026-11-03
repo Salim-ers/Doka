@@ -123,6 +123,15 @@ export function LocationCard() {
                 ))}
               </tbody>
             </table>
+            {/* Téléphone et tablette : le résumé remplace les sept lignes du tableau */}
+            <dl className="loc-hours-summary">
+              {hours.summary.map((h) => (
+                <div key={h.label}>
+                  <dt>{h.label}</dt>
+                  <dd>{h.value}</dd>
+                </div>
+              ))}
+            </dl>
             <p className="small muted">Horaires indicatifs, susceptibles d&apos;évoluer les jours fériés.</p>
           </section>
         )}

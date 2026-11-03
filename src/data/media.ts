@@ -7,6 +7,8 @@
  * Sources : visuels fournis par le client (fichiers « Image ChatGPT … »), 1672 × 941 px.
  * Aucune retouche de contenu, aucun agrandissement. Le livrable 3840 × 2160 demandé
  * nécessite des originaux en plus haute définition (voir README).
+ * Latte, matcha latte et nuage coco-matcha : visuels générés par IA à partir des visuels
+ * Doka, signalés comme tels sur le site (voir docs/MEDIAS.md).
  */
 export type MediaId =
   | "cookies"
@@ -18,19 +20,11 @@ export type MediaId =
   | "espresso"
   | "devantureSoir"
   | "latteGlace"
+  | "nuageCocoMatcha"
   | StockId;
 
 /** Photos d'illustration libres de droits, une par produit sans visuel Doka. */
-type StockId =
-  | "allonge"
-  | "double"
-  | "americano"
-  | "cappuccino"
-  | "flatWhite"
-  | "nuageCocoMatcha"
-  | "chaiLatte"
-  | "chocolatChaud"
-  | "the";
+type StockId = "allonge" | "double" | "americano" | "cappuccino" | "flatWhite" | "chaiLatte" | "chocolatChaud" | "the";
 
 export type MediaItem = {
   id: MediaId;
@@ -57,6 +51,8 @@ export type MediaItem = {
   thumb?: { focus: string; zoom: number };
   /** Photo d'illustration libre de droits (banque d'images), pas une photo de Doka. */
   credit?: { title: string; author: string; license: string; source: string };
+  /** Visuel généré par IA : signalé comme tel, jamais présenté comme une photo. */
+  generated?: boolean;
 };
 
 /** Photo d'illustration libre de droits (CC0 ou domaine public) pour un produit sans visuel Doka. */
@@ -162,20 +158,6 @@ const STOCK_PHOTOS: Record<StockId, MediaItem> = {
       source: "https://commons.wikimedia.org/wiki/File:Two_Hands_Cafe_latte_art_(Unsplash).jpg",
     },
   }),
-  nuageCocoMatcha: stock("nuageCocoMatcha", "nuage-coco-matcha", {
-    subject: "Nuage coco-matcha",
-    alt: "Un matcha au lait glacé dans un grand verre avec une paille, posé sur une table en bois",
-    width: 1115,
-    height: 1672,
-    focus: "50% 62%",
-    thumb: { focus: "50% 75%", zoom: 1 },
-    credit: {
-      title: "Iced green tea latte",
-      author: "Saya1611",
-      license: CC0,
-      source: "https://commons.wikimedia.org/wiki/File:Iced_green_tea_latte.jpg",
-    },
-  }),
   chaiLatte: stock("chaiLatte", "chai-latte", {
     subject: "Chaï latte",
     alt: "Un chaï latte saupoudré d'épices avec un cœur dessiné dans la mousse, dans une tasse anthracite",
@@ -221,6 +203,8 @@ const STOCK_PHOTOS: Record<StockId, MediaItem> = {
 const W = 1672;
 const H = 941;
 const SOURCE = "Visuel client 1672 × 941 px, net, sans compression visible. Pas de version 4K fournie.";
+const GENERATED_SOURCE =
+  "Généré par IA (OpenAI gpt-image-2) en 1536 × 1024 px à partir des visuels Doka, logo officiel posé ensuite.";
 
 export const media: Record<MediaId, MediaItem> = {
   cookies: {
@@ -255,19 +239,38 @@ export const media: Record<MediaId, MediaItem> = {
   },
   matcha: {
     id: "matcha",
-    file: "/images/doka/doka-matcha-glace-gros-plan.webp",
-    original: "media/originals/doka-matcha-glace.png",
+    file: "/images/doka/produits/ia/matcha-latte.webp",
+    original: "media/originals/ia/matcha-latte.png",
     description:
-      "Visuel officiel doka matcha recadré en gros plan sur le gobelet : sans son titre anglais « your favorite drink » ni le logo, coupé au bord bas dans le visuel d'origine.",
+      "Matcha latte glacé dans un gobelet transparent doka : le matcha se fond dans le lait, glaçons, condensation.",
     subject: "Produit — Matcha latte (version glacée)",
-    format: "1072 × 452",
-    width: 1072,
-    height: 452,
+    format: "3:2",
+    width: 1536,
+    height: 1024,
     placements: ["Accueil — Section matcha", "/la-carte (vignette)", "/produits/matcha-latte (détail)"],
-    alt: "Matcha latte glacé dans un gobelet transparent, glaçons et mousse verte, en gros plan",
-    usage: "Produit : Matcha latte uniquement",
-    sourceQuality: SOURCE + " Recadrage généré par scripts/optimize-images.mjs (texte et logo retirés).",
-    focus: "50% 45%",
+    alt: "Matcha latte glacé dans un gobelet transparent doka, le vert du matcha se fondant dans le lait, avec des glaçons",
+    usage: "Produit : Matcha latte uniquement. Visuel généré par IA, à remplacer par une photo Doka.",
+    sourceQuality: GENERATED_SOURCE,
+    focus: "50% 52%",
+    thumb: { focus: "50% 55%", zoom: 1.25 },
+    generated: true,
+  },
+  nuageCocoMatcha: {
+    id: "nuageCocoMatcha",
+    file: "/images/doka/produits/ia/nuage-coco-matcha.webp",
+    original: "media/originals/ia/nuage-coco-matcha.png",
+    description: "Matcha glacé surmonté d'une épaisse mousse de coco blanche, dans un gobelet transparent doka.",
+    subject: "Produit — Nuage coco-matcha",
+    format: "3:2",
+    width: 1536,
+    height: 1024,
+    placements: ["/la-carte (vignette)", "/produits/nuage-coco-matcha (détail)"],
+    alt: "Nuage coco-matcha : matcha glacé surmonté d'une épaisse mousse de coco blanche, dans un gobelet transparent doka",
+    usage: "Produit : Nuage coco-matcha uniquement. Visuel généré par IA, à remplacer par une photo Doka.",
+    sourceQuality: GENERATED_SOURCE + " Composition de la boisson à confirmer.",
+    focus: "50% 50%",
+    thumb: { focus: "50% 55%", zoom: 1.2 },
+    generated: true,
   },
   identite: {
     id: "identite",
@@ -346,21 +349,25 @@ export const media: Record<MediaId, MediaItem> = {
   },
   latteGlace: {
     id: "latteGlace",
-    file: "/images/doka/doka-latte-glace.webp",
-    original: "media/originals/doka-latte-glace.png",
-    description: "Latte glacé aux marbrures de café et de lait, logo doka noir.",
+    file: "/images/doka/produits/ia/latte.webp",
+    original: "media/originals/ia/latte.png",
+    description: "Latte glacé aux marbrures de café et de lait, dans un gobelet transparent doka.",
     subject: "Produit — Latte (version glacée)",
-    format: "16:9",
-    width: W,
-    height: H,
+    format: "3:2",
+    width: 1536,
+    height: 1024,
     placements: ["Accueil — Les incontournables (Latte)", "/la-carte (vignette)", "/produits/latte (détail)"],
-    alt: "Latte glacé Doka, marbrures de café et de lait dans un gobelet transparent",
-    usage: "Produit : Latte, version glacée (option gratuite)",
-    sourceQuality: SOURCE,
-    focus: "50% 40%",
-    fit: "contain",
-    matte: "#FFFFFF",
-    thumb: { focus: "50% 22%", zoom: 1.4 },
+    alt: "Latte glacé dans un gobelet transparent doka, marbrures de café et de lait, avec des glaçons",
+    usage: "Produit : Latte, version glacée (option gratuite). Visuel généré par IA, à remplacer par une photo Doka.",
+    sourceQuality: GENERATED_SOURCE,
+    focus: "50% 55%",
+    thumb: { focus: "50% 55%", zoom: 1.25 },
+    generated: true,
   },
   ...STOCK_PHOTOS,
 };
+
+/** Début de légende : un visuel généré par IA est signalé comme tel, jamais présenté comme une photo. */
+export function captionLabel(id?: MediaId) {
+  return id && media[id].generated ? "Visuel généré par IA" : "Photo";
+}

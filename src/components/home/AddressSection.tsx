@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { MapPin } from "lucide-react";
 import { InstagramGlyph } from "@/components/ui/icons";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP, COMPACT, MOTION_OK } from "@/lib/gsap";
 import { RevealImage } from "@/components/motion/RevealImage";
 import { DokaButton } from "@/components/ui/DokaButton";
 import { siteConfig } from "@/data/site-config";
@@ -22,7 +22,8 @@ export function AddressSection() {
       const el = root.current;
       if (!el) return;
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ compact: COMPACT, motion: MOTION_OK }, (ctx) => {
+        if (!ctx.conditions?.motion) return;
         gsap.fromTo(
           ".ad-photo",
           { "--inset": "14%" },
@@ -36,8 +37,12 @@ export function AddressSection() {
           "--ad-bg": "#F14323",
           "--ad-fg": "#FFFBEA",
           "--ad-soft": "#171714",
+          "--ad-num": "#171714",
           ease: "none",
-          scrollTrigger: { trigger: ".ad-bottom", start: "top 85%", end: "top 35%", scrub: true },
+          // sur petit écran, le titre reste visible pendant le passage : il doit être bref
+          scrollTrigger: ctx.conditions.compact
+            ? { trigger: ".ad-bottom", start: "top 72%", end: "top 52%", scrub: true }
+            : { trigger: ".ad-bottom", start: "top 85%", end: "top 35%", scrub: true },
         });
         gsap.from(".ad-number", {
           yPercent: 60,

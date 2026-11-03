@@ -70,6 +70,10 @@ export default function MentionsLegales() {
             La scène 3D de la page d&apos;accueil est une illustration de la devanture et du service à emporter ; elle
             ne constitue pas une photographie du lieu ou des produits.
           </p>
+          <p>
+            Les visuels du latte, du matcha latte et du nuage coco-matcha sont générés par intelligence artificielle à
+            partir des visuels Doka, à titre d&apos;illustration : la boisson servie peut différer.
+          </p>
         </section>
         {credits.length > 0 && (
           <section>

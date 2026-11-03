@@ -1,0 +1,805 @@
+/* ==========================================================================
+   Téléphones et tablettes : moins de défilement, même identité.
+   Tout ce fichier est réservé à ces écrans (mêmes conditions que COMPACT dans
+   lib/gsap.ts) ; le site sur ordinateur n'est pas concerné.
+   - aucune section ne capte le défilement : hero, café du quotidien, chapitres et
+     lieu se jouent à l'arrivée (voir les composants) ;
+   - espacements et grands titres à l'échelle de l'écran ;
+   - contenus répétés en grille ou en carrousel plutôt qu'empilés.
+   ========================================================================== */
+@media (max-width: 1239px), (pointer: coarse) {
+  :root {
+    --section-y: clamp(2.5rem, 6vw, 4.5rem);
+    --flow-h: clamp(64px, 13vw, 130px);
+    --fs-lead: clamp(1.02rem, 1.3vw, 1.2rem);
+    --fs-giant: clamp(4.4rem, 20vw, 11rem);
+  }
+  .dbtn--lg {
+    min-height: 52px;
+    padding: 0 1.3rem;
+    font-size: 0.98rem;
+  }
+
+  /* --- Accueil : le hero tient en un écran */
+  .hero {
+    height: auto;
+  }
+  .hero__sticky {
+    position: relative;
+  }
+
+  /* --- Le café du quotidien : la phrase sur l'orange, l'échelle sur une nappe crème
+         à épaules rondes, qui se prolonge dans la section suivante */
+  .ev-sticky {
+    gap: 1.6rem;
+    padding: var(--section-y) var(--gutter) 0;
+  }
+  .ev-stack {
+    gap: 1rem;
+  }
+  .ev-title {
+    font-size: clamp(3.2rem, 11.5vw, 7.5rem);
+  }
+  .ev-inline-price {
+    font-variant-numeric: tabular-nums;
+  }
+  .ev-ladder {
+    gap: 0.8rem;
+    width: auto;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 1.5rem var(--gutter) 0.4rem;
+    border-radius: var(--r-blob) var(--r-blob) 0 0;
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .ev-ladder__title {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+  }
+  .ev-ladder__list {
+    gap: 0;
+  }
+  .ev-ladder__row {
+    grid-template-columns: 6.6rem 1fr auto;
+    gap: 0.7rem;
+    font-size: 1.05rem;
+  }
+  .ev-ladder__track {
+    grid-column: auto;
+    order: 0;
+    height: 12px;
+  }
+  .ev-ladder__name,
+  .ev-ladder__more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .ev-ladder__more {
+    font-size: 1rem;
+  }
+
+  /* --- Les incontournables : carrousel, la carte suivante reste visible au bord */
+  .inc {
+    padding-block: 1.5rem var(--section-y);
+  }
+  .inc-sticky {
+    gap: 1rem;
+  }
+  .inc-head {
+    gap: 0.4rem 2rem;
+  }
+  .inc-viewport {
+    scroll-padding-inline: var(--gutter);
+  }
+  .inc-track {
+    padding-bottom: 0.5rem;
+  }
+  .inc-card {
+    width: min(72vw, 22rem);
+    scroll-snap-align: start;
+  }
+  .inc-card__visual {
+    aspect-ratio: 4 / 3;
+  }
+  .inc-card__body {
+    gap: 0.25rem;
+    padding: 0.9rem 1.1rem 1.1rem;
+  }
+  .inc-card__name {
+    font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  }
+  .inc-card__price {
+    margin-top: 0.2rem;
+    font-size: 1.35rem;
+  }
+  .inc-card__caption {
+    display: none;
+  }
+  .inc-card--end {
+    padding: 1.4rem;
+  }
+  .inc-end__title {
+    font-size: clamp(2.2rem, 4.4vw, 3.2rem);
+  }
+
+  /* --- Matcha */
+  .matcha {
+    padding: 1.2rem var(--gutter) var(--section-y);
+  }
+  .matcha-grid {
+    gap: 1.4rem;
+  }
+  .matcha-copy {
+    gap: 0.9rem;
+  }
+  .matcha-facts {
+    gap: 0.35rem;
+    font-size: 1rem;
+  }
+  .matcha-facts li {
+    padding-bottom: 0.35rem;
+  }
+  .matcha-figure figcaption {
+    display: none;
+  }
+
+  /* --- L'heure du café : les trois prix sur une ligne */
+  .cm {
+    padding: 1.2rem var(--gutter) var(--section-y);
+  }
+  .cm-stream {
+    left: auto;
+    right: calc(var(--gutter) * 0.2 - 18px);
+  }
+  .cm-title {
+    margin-bottom: 1rem;
+    font-size: clamp(3.4rem, 13vw, 7rem);
+  }
+  .cm-grid {
+    gap: 1.4rem;
+  }
+  .cm-copy,
+  .cm-lines {
+    gap: 0.9rem;
+  }
+  .cm-prices {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    max-width: none;
+  }
+  .cm-prices div {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    border-bottom: 0;
+    font-size: 0.95rem;
+  }
+  .cm-prices dd {
+    font-size: 1.25rem;
+  }
+
+  /* --- Le coin gourmand */
+  .cg {
+    padding-bottom: var(--section-y);
+  }
+  .cg-marquee {
+    margin-top: 1.2rem;
+  }
+  .cg-grid {
+    gap: 1rem;
+    padding-top: 1.6rem;
+  }
+  .cg-copy {
+    gap: 0.7rem;
+  }
+
+  /* --- L'adresse */
+  /* le pied de page recouvre le bas de la section : ses coins arrondis laissent voir l'orange */
+  .ad {
+    --ad-num: var(--orange);
+    margin-bottom: -3.5rem;
+    padding-bottom: 6rem;
+  }
+  /* le titre reste à l'écran quand le fond passe à l'orange : le « 15 » passe au noir */
+  .ad-number {
+    color: var(--ad-num);
+  }
+  .ad-title {
+    font-size: clamp(3rem, 13vw, 7.5rem);
+  }
+  .ad-sub {
+    margin-block: 0.8rem 1.2rem;
+  }
+  .ad-photo {
+    height: min(40svh, 56vw);
+  }
+  .ad-bottom {
+    gap: 1rem;
+    padding-top: 1.6rem;
+  }
+  .ad-big {
+    font-size: clamp(2.3rem, 7.5vw, 4.5rem);
+  }
+
+  /* --- Pied de page : l'adresse et les horaires côte à côte, le logo en signature */
+  .site-footer {
+    padding-top: 2.4rem;
+  }
+  .footer-top {
+    gap: 0.6rem;
+  }
+  .footer-sign {
+    font-size: clamp(2.5rem, 9vw, 5rem);
+  }
+  .footer-promise,
+  .footer-note {
+    display: none;
+  }
+  .footer-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.3rem var(--gutter);
+    margin-top: 1.5rem;
+    font-size: 1.02rem;
+  }
+  .footer-h {
+    margin-bottom: 0.35rem;
+    font-size: 0.88rem;
+  }
+  .footer-hours {
+    gap: 0.3rem;
+  }
+  .footer-hours dt {
+    font-size: 0.88rem;
+  }
+  .footer-cols nav {
+    grid-column: 1 / -1;
+  }
+  .footer-cols nav .footer-h {
+    display: none;
+  }
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.1rem;
+  }
+  .footer-nav a,
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-block: 0;
+  }
+  .footer-follow {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+  }
+  .footer-follow .footer-h {
+    display: none;
+  }
+  .footer-top-btn {
+    margin-top: 0;
+    height: 44px;
+    padding: 0 14px;
+  }
+  .footer-logo {
+    margin-top: 1.4rem;
+  }
+  .footer-legal {
+    margin-top: 0.6rem;
+    gap: 0 1rem;
+  }
+
+  /* --- La carte : on arrive plus vite aux boissons ; chaque ligne, photo comprise,
+         ouvre la fiche et tient sur deux lignes de texte */
+  .page-carte {
+    padding-top: calc(var(--header-h) + 0.4rem);
+  }
+  .carte-hero {
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+  }
+  .carte-hero__title {
+    font-size: clamp(4rem, 17vw, 9rem);
+  }
+  .mb-tabs {
+    margin-bottom: 1.2rem;
+  }
+  .mb-board {
+    gap: 1.6rem;
+  }
+  .mb-section__title {
+    font-size: clamp(2.4rem, 7vw, 4rem);
+  }
+  .mb-row:not(.mb-row--static) .mb-row__line {
+    position: relative;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "thumb name fav toggle"
+      "thumb price fav toggle";
+    gap: 0 0.6rem;
+    min-height: 0;
+    padding-block: 0.45rem;
+  }
+  .mb-row__thumb {
+    grid-area: thumb;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+  .mb-row:not(.mb-row--static) .mb-row__name {
+    grid-area: name;
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+    min-height: 0;
+    font-size: 1.12rem;
+    line-height: 1.2;
+  }
+  .mb-row:not(.mb-row--static) .mb-row__name::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .mb-row:not(.mb-row--static) .mb-row__leader {
+    display: none;
+  }
+  .mb-row:not(.mb-row--static) .mb-row__price {
+    grid-area: price;
+    justify-self: start;
+    padding: 0;
+    font-size: 1rem;
+    color: var(--ink-2);
+  }
+  .mb-row__fav,
+  .mb-row__toggle {
+    position: relative;
+    z-index: 1;
+  }
+  .mb-row__fav {
+    grid-area: fav;
+  }
+  .mb-row__toggle {
+    grid-area: toggle;
+  }
+  .mb-byoc {
+    margin-top: 1.4rem;
+  }
+  .mb-byoc__stamp {
+    width: 84px;
+    height: 84px;
+    font-size: 1.25rem;
+  }
+
+  /* --- Nos favoris : les quatre boissons d'un coup d'œil, chaque carte ouvre sa fiche */
+  .favoris-hero {
+    gap: 1rem;
+    min-height: 0;
+    padding: calc(var(--header-h) + 0.8rem) var(--gutter) 1.4rem;
+  }
+  .favoris-sel__head {
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .sel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem 0.8rem;
+  }
+  .sel-item,
+  .sel-item:nth-child(even) {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    align-items: start;
+  }
+  .sel-item:nth-child(even) .sel-item__visual {
+    order: 0;
+  }
+  .sel-item__visual {
+    aspect-ratio: 1;
+    border-radius: var(--r-card);
+  }
+  .sel-item__body {
+    gap: 0.2rem;
+  }
+  .sel-item__name {
+    font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+    line-height: 0.95;
+  }
+  .sel-item__price {
+    font-size: 1.15rem;
+  }
+  .sel-item__text,
+  .sel-item__body > .small {
+    display: none;
+  }
+  .sel-item__actions {
+    display: contents;
+  }
+  /* le lien couvre la carte ; son texte reste lu par les lecteurs d'écran */
+  .sel-item__link {
+    font-size: 0;
+  }
+  .sel-item__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: var(--r-card);
+  }
+  .sel-item__link:focus-visible {
+    outline: none;
+  }
+  .sel-item__link:focus-visible::after {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
+  /* le cœur rejoint la photo, comme sur les autres cartes ; son libellé reste lu lui aussi */
+  .sel-item .fav-btn--label {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    justify-content: center;
+  }
+  .sel-item .fav-btn--label > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .favoris-mine,
+  .favs {
+    gap: 1rem;
+  }
+  .fav-empty {
+    gap: 0.6rem;
+    padding: 1.4rem;
+  }
+  .fav-empty__cup {
+    width: 64px;
+  }
+  .favs-count__n {
+    font-size: clamp(3rem, 8vw, 5rem);
+  }
+
+  /* --- Fiche produit */
+  .pd {
+    padding-top: calc(var(--header-h) + 0.4rem);
+  }
+  .pd-top {
+    gap: 1rem;
+  }
+  .pd-visual {
+    aspect-ratio: 16 / 10;
+  }
+  .pd-visual-wrap {
+    gap: 0.3rem;
+  }
+  .pd-info {
+    gap: 0.7rem;
+  }
+  .pd-name {
+    font-size: clamp(2.8rem, 8vw, 5rem);
+  }
+  .pd-price {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+  }
+  .pd-body {
+    gap: 0.9rem;
+  }
+  .pd-options__list li {
+    padding: 0.35rem 0;
+  }
+  .pd-suggest {
+    gap: 1rem;
+  }
+
+  /* --- L'esprit Doka */
+  .esprit-hero {
+    gap: 1rem;
+    min-height: 0;
+    padding: calc(var(--header-h) + 0.8rem) var(--gutter) 1.8rem;
+  }
+  .esprit-hero__kicker {
+    font-size: 1.1rem;
+  }
+  .esprit-hero__title {
+    max-width: 18ch;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+  }
+  .ch-list {
+    gap: 1.3rem;
+  }
+  .ch-item__big {
+    margin-bottom: 0.25rem;
+    font-size: clamp(2.5rem, 7.5vw, 5rem);
+  }
+  .es-quote {
+    padding-block: 0.8rem 1.2rem;
+  }
+  .es-quote__text {
+    font-size: clamp(3.4rem, 13vw, 8rem);
+  }
+  .cs-open {
+    height: auto;
+  }
+  .cs-open__sticky {
+    position: relative;
+    height: min(58svh, 110vw);
+  }
+  .cs-open__title {
+    bottom: 1rem;
+    font-size: clamp(3.4rem, 13vw, 8rem);
+  }
+  .cs-zoom {
+    top: 1rem;
+  }
+  .cs-text {
+    gap: 1rem;
+  }
+  .cs-street {
+    gap: 1.2rem;
+  }
+  .es-id,
+  .es-board {
+    gap: 1.4rem;
+  }
+  .es-id__copy,
+  .es-board__copy {
+    gap: 0.8rem;
+  }
+  .es-idcard {
+    min-height: clamp(190px, 28vw, 360px);
+  }
+  /* le tableau garde ses deux colonnes, comme le vrai */
+  .es-tableau {
+    padding: 1rem;
+    font-size: 0.82rem;
+  }
+  .es-tableau__cols {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 1.1rem;
+  }
+  .es-tableau__h {
+    font-size: 1.35rem;
+  }
+  .es-stamp {
+    width: 104px;
+    height: 104px;
+    margin-top: 0.2rem;
+    font-size: 0.82rem;
+  }
+  .es-stamp .price {
+    font-size: 1.5rem;
+  }
+  .es-board__ctas {
+    margin-top: 0.2rem;
+  }
+
+  /* --- Nous trouver : l'adresse figure déjà sur la carte orange, juste en dessous */
+  .page-trouver {
+    padding-top: calc(var(--header-h) + 0.4rem);
+  }
+  .trouver-hero {
+    gap: 0.5rem;
+    padding-bottom: 1.2rem;
+  }
+  .trouver-hero__addr {
+    display: none;
+  }
+  .loc {
+    gap: 1rem;
+  }
+  .loc-grid {
+    gap: 0.8rem;
+  }
+  .loc-card {
+    gap: 0.8rem;
+    padding: 1.2rem;
+  }
+  .loc-hours {
+    display: none;
+  }
+  .loc-hours-summary {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .loc-hours-summary div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line);
+    font-weight: 540;
+  }
+  .loc-hours-summary dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .loc-access {
+    gap: 0.5rem;
+  }
+  .loc-access li {
+    padding-bottom: 0.5rem;
+  }
+  .loc-access strong {
+    font-size: 1.1rem;
+  }
+  .map {
+    min-height: clamp(240px, 38vw, 420px);
+  }
+  .trouver-faq {
+    gap: 1rem;
+  }
+  .faq__q {
+    min-height: 56px;
+    padding-block: 0.5rem;
+    font-size: 1.05rem;
+  }
+  .faq__a p {
+    padding-bottom: 0.9rem;
+    font-size: 1rem;
+  }
+}
+
+/* ==========================================================================
+   Avec la barre du bas (< 1240 px) : « La carte » et « Itinéraire » sont toujours
+   sous le pouce, inutile de les répéter dans les pages.
+   ========================================================================== */
+@media (max-width: 1239px) {
+  .ad-ctas > a[target="_blank"]:first-child,
+  .loc-actions > a,
+  .pd-actions > .dbtn {
+    display: none;
+  }
+  .site-footer {
+    padding-bottom: calc(0.5rem + var(--dock-space));
+  }
+}
+
+/* ==========================================================================
+   Téléphones
+   ========================================================================== */
+@media (max-width: 599px) {
+  .matcha-ctas .dbtn--outline,
+  .carte-hero__sub {
+    display: none;
+  }
+  /* Instagram et « Retour en haut » sur une ligne : la flèche seule, son libellé reste lu */
+  .footer-top-btn {
+    justify-content: center;
+    width: 44px;
+    padding: 0;
+    font-size: 0;
+  }
+  /* « ça va bien avec » : à balayer plutôt que trois cartes empilées */
+  .pd-suggest__grid {
+    display: flex;
+    gap: 0.8rem;
+    width: auto;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    padding-bottom: 0.4rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .pd-suggest__grid::-webkit-scrollbar {
+    display: none;
+  }
+  .pd-suggest__grid .pcard {
+    flex: none;
+    width: min(62vw, 15rem);
+    scroll-snap-align: start;
+  }
+  .pd-suggest__grid .pcard__media {
+    aspect-ratio: 4 / 3;
+  }
+  .pd-suggest__grid .pcard__body {
+    padding: 0.8rem 0.9rem 0.9rem;
+  }
+  .pd-suggest__grid .pcard__tag,
+  .pd-suggest__grid .pcard__short {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Tablettes en portrait : deux colonnes, comme sur ordinateur (dès 900 px)
+   ========================================================================== */
+@media (min-width: 700px) and (max-width: 899px) {
+  .matcha-grid {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+  .cm-grid {
+    grid-template-columns: 0.75fr 1.25fr;
+  }
+  .cg-grid {
+    grid-template-columns: 1.4fr 0.6fr;
+    align-items: end;
+  }
+  .cg-title {
+    grid-column: 1 / -1;
+  }
+  .pd-top {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+  .pd-visual {
+    aspect-ratio: 1;
+  }
+  .cs-text {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
+  .es-id {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+  .es-board {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+  .es-board__img {
+    order: -1;
+  }
+}
+@media (min-width: 640px) and (max-width: 999px) {
+  .loc-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .loc-card:first-child {
+    grid-row: span 2;
+  }
+}
+@media (min-width: 700px) and (max-width: 1239px), (min-width: 700px) and (pointer: coarse) {
+  .mb-section .mb-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2rem;
+    align-items: start;
+  }
+  .sel {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .ch-list {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.8rem var(--gutter);
+  }
+}
+
+/* ==========================================================================
+   Téléphone à l'horizontale (peu de hauteur) : les titres restent à la mesure de l'écran
+   ========================================================================== */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero__sticker span {
+    font-size: 1.75em;
+    white-space: nowrap;
+  }
+  .carte-hero__title {
+    font-size: clamp(2.6rem, 22vh, 7rem);
+  }
+  .esprit-hero__title {
+    font-size: clamp(2rem, 12vh, 4.2rem);
+  }
+  .pd-name {
+    font-size: clamp(2.2rem, 16vh, 4.6rem);
+  }
+  .cs-open__sticky {
+    height: 80svh;
+  }
+  .ad-photo {
+    height: 60svh;
+  }
+}
